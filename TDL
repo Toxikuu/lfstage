@@ -20,3 +20,4 @@ ROADMAP
         support for sources/ to avoid having to download files on each clean build
         support for execution without the crate source
         root user check
+        fstab generation
