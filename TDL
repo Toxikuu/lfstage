@@ -1,0 +1,22 @@
+# Project: lfstage
+
+TODO
+
+WIP
+
+DONEISH
+
+    test-drive
+
+ROADMAP
+
+    Features for lfstage-1.0.0:
+        config support
+        support for tarballs to be extracted post-install
+        support for binary stripping
+        support for upx packing
+
+    Features for lfstage-2.0.0:
+        support for sources/ to avoid having to download files on each clean build
+        support for execution without the crate source
+        root user check
