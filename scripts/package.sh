@@ -19,7 +19,7 @@ mass_strip() {
 
   for binary in "${binaries[@]}"; do
     echo "Stripping $binary..."
-    strip --strip-all "$binary"
+    strip --strip-debug "$binary"
   done
 }
 
@@ -32,26 +32,26 @@ mass_strip "$LFS/usr/x86_64-lfs-linux-gnu/bin"
 
 
 ### UPX
-mass_upx() {
-  cd "$1"
-
-  binaries=()
-  while IFS= read -r f; do
-    binaries+=("$f")
-  done < <(find . -type f -exec file {} \; | grep -i "stripped" | cut -d':' -f1)
-
-  for binary in "${binaries[@]}"; do
-    echo "Packing $binary..."
-    upx --best --lzma "$binary" || true
-  done
-}
-
-mass_upx "$LFS/usr/bin"
-mass_upx "$LFS/usr/sbin"
-mass_upx "$LFS/usr/lib"
-mass_upx "$LFS/usr/lib32"
-mass_upx "$LFS/usr/libexec"
-mass_upx "$LFS/usr/x86_64-lfs-linux-gnu/bin"
+# mass_upx() {
+#   cd "$1"
+#
+#   binaries=()
+#   while IFS= read -r f; do
+#     binaries+=("$f")
+#   done < <(find . -type f -exec file {} \; | grep -i "stripped" | cut -d':' -f1)
+#
+#   for binary in "${binaries[@]}"; do
+#     echo "Packing $binary..."
+#     upx --best --lzma "$binary" || true
+#   done
+# }
+#
+# mass_upx "$LFS/usr/bin"
+# mass_upx "$LFS/usr/sbin"
+# mass_upx "$LFS/usr/lib"
+# mass_upx "$LFS/usr/lib32"
+# mass_upx "$LFS/usr/libexec"
+# mass_upx "$LFS/usr/x86_64-lfs-linux-gnu/bin"
 
 
 ### CREATE STAGE2 TARBALL
@@ -62,5 +62,5 @@ rm -rvf "$LFS"/sources/*
 cd "$LFS"
 XZ_OPT=-9e tar cJpvf lfs-stage2-$(date +%Y-%m-%d_%H-%M-%S).tar.xz . || true
 
-mkdir -pv "$SCRIPT_DIR"/../../stages
-mv -vf lfs-stage2-*.tar.xz "$SCRIPT_DIR"/../../stages
+mkdir -pv "$SCRIPT_DIR"/../stages
+mv -vf lfs-stage2-*.tar.xz "$SCRIPT_DIR"/../stages
