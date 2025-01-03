@@ -9,7 +9,7 @@ SOURCES="$LFS/sources"
 [ -z "$LFS" ] && exit 1
 
 ### CHOWN
-chown -vR 0:0 $LFS # probably redundant, but best be safe
+chown -vR 0:0 $LFS
 
 pushd "$LFS"
 umount -vR . || true
