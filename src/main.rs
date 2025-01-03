@@ -27,16 +27,10 @@ fn build() -> Result<(), std::io::Error> {
         cmd::exec(&command)?;
     }
 
-    // complete chapter 5
-    if CONFIG.build_ch5 {
-        info!("Executing chapter 5 steps");
-        cmd::exec("scripts/ch5.sh")?;
-    }
-
-    // complete chapter 6
-    if CONFIG.build_ch6 {
-        info!("Executing chapter 6 steps");
-        cmd::exec("scripts/ch6.sh")?;
+    // complete chapter 5 and 6
+    if CONFIG.build_ch5and6 {
+        info!("Executing chapter 5 and 6 steps");
+        cmd::exec("scripts/ch5and6.sh")?;
     }
 
     // complete chapter 7
