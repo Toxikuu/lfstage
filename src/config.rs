@@ -5,8 +5,7 @@ use std::fs;
 pub struct Config {
     pub disk: String,
     pub build_pre: bool,
-    pub build_ch5: bool,
-    pub build_ch6: bool,
+    pub build_ch5and6: bool,
     pub build_ch7: bool,
     pub custom_tarball: Option<String>,
 }
