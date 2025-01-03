@@ -6,6 +6,8 @@ source "$SCRIPT_DIR"/../envs/base.env
 
 SOURCES="$LFS/sources"
 
+cp -vf "$SCRIPT_DIR"/../sources/* "$SOURCES"
+
 download() {
   local url="$1"
   local filename=$(basename "$url")
