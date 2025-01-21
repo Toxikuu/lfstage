@@ -1,6 +1,6 @@
 [package]
 name = "lfstage"
-version = "1.0.0" # initial commit
+version = "1.0.1" # updated dependenecies
 edition = "2024"
 
 [dependencies]
