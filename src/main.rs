@@ -1,5 +1,22 @@
 // src/main.rs
 
+#![deny(
+    clippy::perf,
+    clippy::todo,
+    clippy::complexity,
+)]
+#![warn(
+    clippy::all,
+    clippy::pedantic,
+    clippy::nursery,
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    unused,
+    // missing_docs,
+    // clippy::cargo,
+)]
+
 mod config;
 mod globals;
 mod cmd;
@@ -8,13 +25,14 @@ mod utils;
 
 use log::{info, error};
 use globals::CONFIG;
+use log4rs::config::Deserializers;
 
 fn build() -> Result<(), std::io::Error> {
 
     info!("Beginning stage2 build");
 
     if CONFIG.disk.is_empty() {
-        error!("Specify a disk in the config.toml!")
+        error!("Specify a disk in the config.toml!");
     }
 
     if CONFIG.build_pre {
@@ -36,7 +54,7 @@ fn build() -> Result<(), std::io::Error> {
     // complete chapter 7
     if CONFIG.build_ch7 {
         info!("Executing chapter 7 steps");
-        let command = format!("CUSTOM_TARBALL='{}' scripts/ch7.sh", CONFIG.custom_tarball.clone().unwrap_or("".to_string()));
+        let command = format!("CUSTOM_TARBALL='{}' scripts/ch7.sh", CONFIG.custom_tarball.clone().unwrap_or_default());
         cmd::exec(&command)?;
     }
 
@@ -45,7 +63,6 @@ fn build() -> Result<(), std::io::Error> {
 }
 
 fn main() {
-    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
-
+    log4rs::init_file("log4rs.yaml", Deserializers::default()).unwrap();
     let _ = build(); // to avoid printing anything on errors
 }

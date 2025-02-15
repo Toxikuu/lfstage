@@ -20,10 +20,10 @@ pub fn exec(command: &str) -> io::Result<()> {
         for line in reader.lines() {
             match line {
                 Ok(line) => {
-                    pr!("{}", line);
-                    debug!("{}", line)
+                    pr!("{line}");
+                    debug!("{line}");
                 }
-                Err(e) => erm!("Error reading stdout: {}", e),
+                Err(e) => erm!("Error reading stdout: {e}"),
             }
         }
     });
@@ -33,20 +33,20 @@ pub fn exec(command: &str) -> io::Result<()> {
         for line in reader.lines() {
             match line {
                 Ok(line) => {
-                    pr!("\x1b[31;3;1m{}", line);
-                    debug!("[ERR] {}", line)
+                    pr!("\x1b[31;3;1m{line}");
+                    debug!("[ERR] {line}");
                 }
-                Err(e) => erm!("Error reading stderr: {}", e),
+                Err(e) => erm!("Error reading stderr: {e}"),
             }
         }
     });
 
     let status = child.wait()?;
     if !status.success() {
-        error!("Culprit: `{}`", command);
+        error!("Culprit: `{command}`");
         return Err(io::Error::new(
             io::ErrorKind::Other,
-            format!("Command failed with status: {}", status),
+            format!("Command failed with status: {status}"),
         ));
     }
 
