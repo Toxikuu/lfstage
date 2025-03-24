@@ -1,6 +1,6 @@
 [package]
 name = "lfstage"
-version = "1.1.0" # refactoring && code quality enforcement
+version = "1.2.0" # package updates, minor improvements, tweaks, dependency updates
 edition = "2024"
 
 [dependencies]
