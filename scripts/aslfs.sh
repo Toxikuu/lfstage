@@ -105,7 +105,7 @@ mlist=m64,m32
 ../configure                                       \
     --target=$LFS_TGT                              \
     --prefix=$LFS/tools                            \
-    --with-glibc-version=2.40                      \
+    --with-glibc-version=2.41                      \
     --with-sysroot=$LFS                            \
     --with-newlib                                  \
     --without-headers                              \
@@ -151,7 +151,7 @@ pre glibc
 ln -sfv ../lib/ld-linux-x86-64.so.2 $LFS/lib64
 ln -sfv ../lib/ld-linux-x86-64.so.2 $LFS/lib64/ld-lsb-x86-64.so.3
 
-patch -Np1 -i ../glibc-2.40-fhs-1.patch
+patch -Np1 -i ../glibc-2.41-fhs-1.patch
 mkdir -v build
 cd       build
 
@@ -488,7 +488,7 @@ pre xz
             --host=$LFS_TGT                   \
             --build=$(build-aux/config.guess) \
             --disable-static                  \
-            --docdir=/usr/share/doc/xz-5.6.3
+            --docdir=/usr/share/doc/xz-5.6.4
 make
 make DESTDIR=$LFS install
 rm -v $LFS/usr/lib/liblzma.la
@@ -499,7 +499,7 @@ post xz
 ### BINUTILS PASS 2
 pre binutils
 
-sed '6009s/$add_dir//' -i ltmain.sh
+sed '6031s/$add_dir//' -i ltmain.sh
 
 mkdir -v build
 cd       build

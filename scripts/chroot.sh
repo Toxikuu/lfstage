@@ -163,8 +163,9 @@ mkdir -pv /var/lib/hwclock
             --disable-liblastlog2 \
             --without-python      \
             ADJTIME_PATH=/var/lib/hwclock/adjtime \
-            --docdir=/usr/share/doc/util-linux-2.40.2
+            --docdir=/usr/share/doc/util-linux-2.40.4
 
+make
 make install
 make distclean
 
@@ -172,7 +173,7 @@ CC="gcc -m32" \
 ./configure --host=i686-pc-linux-gnu \
             --libdir=/usr/lib32      \
             --runstatedir=/run       \
-            --docdir=/usr/share/doc/util-linux-2.40.2 \
+            --docdir=/usr/share/doc/util-linux-2.40.4 \
             --disable-chfn-chsh   \
             --disable-login       \
             --disable-nologin     \
