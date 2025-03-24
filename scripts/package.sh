@@ -9,26 +9,26 @@ source "$SCRIPT_DIR"/../envs/base.env
 
 
 ### STRIP
-mass_strip() {
-  cd "$1"
-
-  binaries=()
-  while IFS= read -r f; do
-    binaries+=("$f")
-  done < <(find . -type f -exec file {} \; | grep -i "not stripped" | cut -d':' -f1)
-
-  for binary in "${binaries[@]}"; do
-    echo "Stripping $binary..."
-    strip --strip-debug "$binary"
-  done
-}
-
-mass_strip "$LFS/usr/bin"
-mass_strip "$LFS/usr/sbin"
-mass_strip "$LFS/usr/lib"
-mass_strip "$LFS/usr/lib32"
-mass_strip "$LFS/usr/libexec"
-mass_strip "$LFS/usr/x86_64-lfs-linux-gnu/bin"
+# mass_strip() {
+#   cd "$1"
+#
+#   binaries=()
+#   while IFS= read -r f; do
+#     binaries+=("$f")
+#   done < <(find . -type f -exec file {} \; | grep -i "not stripped" | cut -d':' -f1)
+#
+#   for binary in "${binaries[@]}"; do
+#     echo "Stripping $binary..."
+#     strip --strip-debug "$binary"
+#   done
+# }
+#
+# mass_strip "$LFS/usr/bin"
+# mass_strip "$LFS/usr/sbin"
+# mass_strip "$LFS/usr/lib"
+# mass_strip "$LFS/usr/lib32"
+# mass_strip "$LFS/usr/libexec"
+# mass_strip "$LFS/usr/x86_64-lfs-linux-gnu/bin"
 
 
 ### UPX
@@ -57,10 +57,8 @@ mass_strip "$LFS/usr/x86_64-lfs-linux-gnu/bin"
 ### CREATE STAGE2 TARBALL
 rm -vf "$LFS"/chroot.{env,sh}
 rm -rvf "$LFS"/tmp/extract
-rm -rvf "$LFS"/sources/*
+rm -rvf "$LFS"/sources
 
 cd "$LFS"
-XZ_OPT=-9e tar cJpvf lfs-stage2-$(date +%Y-%m-%d_%H-%M-%S).tar.xz . || true
-
 mkdir -pv "$SCRIPT_DIR"/../stages
-mv -vf lfs-stage2-*.tar.xz "$SCRIPT_DIR"/../stages
+XZ_OPT=-9e tar cJpvf "$SCRIPT_DIR"/../stages/lfs-stage2-$(date +%Y-%m-%d_%H-%M-%S).tar.xz * || true

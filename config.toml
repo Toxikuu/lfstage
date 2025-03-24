@@ -1,4 +1,5 @@
-disk = "/dev/nvme1n1" # the disk that will be formatted and LFS will be built on - currently only supports sda and nvme, though I may switch to using loopback devices in the future
+# TODO: Use loopback instead
+disk = "/dev/nvme2n1" # the disk that will be formatted and LFS will be built on - currently only supports sda and nvme, though I may switch to using loopback devices in the future
           # example: /dev/nvme1n1
           # alt example: /dev/sda
 
