@@ -1,5 +1,5 @@
 # LFStage
-**A utility for creating LFS stage files**
+**LFS stage file generator**
 
 ## Introduction
 LFStage builds LFS [stage files](https://wiki.gentoo.org/wiki/Stage_file).
