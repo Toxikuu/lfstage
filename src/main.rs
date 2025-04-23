@@ -24,7 +24,7 @@ use std::process::exit;
 use std::str::FromStr;
 use std::sync::OnceLock;
 use tracing::Level;
-use tracing::{info, level_filters::LevelFilter};
+use tracing::{error, info, level_filters::LevelFilter};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_appender::rolling;
 use tracing_subscriber::prelude::*;
@@ -49,14 +49,19 @@ fn build() -> Result<(), std::io::Error> {
     info!("Building chapter 7");
     exec!("TS={ts} {SCRIPTDIR}/07-chapter7.sh")?;
 
-    info!("Saved stagefile to /var/tmp/lfstage/lfstage@{ts}.tar.xz");
+    info!("Saved stagefile to /var/tmp/lfstage/stages/lfstage@{ts}.tar.xz");
     Ok(())
 }
 
 fn main() {
+    init();
+    // Avoid printing more than necessary on failures
+    let _ = build();
+}
+
+fn init() {
     check_perms();
     log();
-    let _ = build();
 }
 
 fn check_perms() {
@@ -76,7 +81,7 @@ fn log() {
         .with_env_var("LOG_LEVEL")
         .from_env_lossy();
 
-    // Trace-level logs will only be written to stdout as they take up a lot of space
+    // Trace-level logs are only written to stdout as they take up a lot of space
     tracing_subscriber::fmt()
         .with_env_filter(filter)
         .with_level(true)
@@ -86,9 +91,9 @@ fn log() {
         .compact()
         .init();
 
-    LOG_GUARD
-        .set(guard)
-        .expect("log() was called more than once");
+    if LOG_GUARD.set(guard).is_err() {
+        error!("[UNREACHABLE] log() was called more than once");
+    }
 }
 
 fn timestamp() -> String {
