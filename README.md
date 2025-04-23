@@ -19,6 +19,7 @@ LFStage makes a few opinionated optimizations:
 - Packages are built with more restrictive flags and less support for
   old/uncommon software and hardware. And also without nls. Sorry.
 - All executable binaries are stripped with `strip --strip-unneeded`.
+- All test suites, excepting sanity checks, are skipped.
 - The stage files are compressed with `xz -9e`[^1].
 - "Unnecessary" files are removed[^2].
 - Texinfo is skipped[^3].
@@ -47,7 +48,9 @@ tree DESTDIR
 
 ## Dependencies
 LFStage depends on a rust compiler, though a binary tarball is also provided as
-a release asset.
+a release asset[^4].
+
+[^4]: An LFStage-generated stage file is also provided as a release asset.
 
 LFStage checks via `scripts/00-reqs.sh` to ensure the system meets the minimum
 requirements to build LFS when run.
@@ -66,10 +69,22 @@ LFStage writes a log to `/var/log/lfstage.log`, though the log level is limited
 to debug because writing trace-level logs results in a massive log file.
 
 ## Todos
-I'd like to support the following features in the future:
-- Configure script, supporting standard variables
-- Simple argument parsing with clap
+- `./configure` script, supporting standard variables
+- Simple argument parsing with [clap](https://github.com/clap-rs/clap)
 - More configuration options
     - Compression algorithm
+    - Image size (with minimum)
 - Support for multiple stages
 - Support custom file trees specified in `/etc/lfstage/custom/`
+- GitHub actions
+    - Formatting
+        - Trimming white space
+        - Rustfmt
+    - Test
+        - Lint
+        - Nextest
+        - Audit
+    - Release
+        - Changelog
+        - Build stage file
+        - LFStage binary tarball
