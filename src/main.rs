@@ -34,7 +34,7 @@ const SCRIPTDIR: &str = "/usr/share/lfstage/scripts";
 static LOG_GUARD: OnceLock<WorkerGuard> = OnceLock::new();
 
 fn build() -> Result<(), std::io::Error> {
-    info!("Beginning stagefile build");
+    info!("Beginning stage file build");
     let ts = timestamp();
 
     info!("Executing prebuild scripts");
@@ -49,7 +49,7 @@ fn build() -> Result<(), std::io::Error> {
     info!("Building chapter 7");
     exec!("TS={ts} {SCRIPTDIR}/07-chapter7.sh")?;
 
-    info!("Saved stagefile to /var/tmp/lfstage/stages/lfstage@{ts}.tar.xz");
+    info!("Saved stage file to /var/tmp/lfstage/stages/lfstage@{ts}.tar.xz");
     Ok(())
 }
 

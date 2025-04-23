@@ -95,7 +95,7 @@ find "${LFS:?}" -type f -executable -exec file {} + |
 msg "Stripped!"
 
 # Save
-msg "Saving stagefile..."
+msg "Saving stage file..."
 cd "${LFS:?}"
 XZ_OPT=-9e tar -cJpf "/var/tmp/lfstage/stages/lfstage@${TS:?}.tar.xz" .
 
