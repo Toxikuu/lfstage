@@ -17,18 +17,30 @@ mod cmd;
 mod config;
 mod globals;
 
+use std::{
+    io,
+    process::exit,
+    str::FromStr,
+    sync::OnceLock,
+};
+
 use chrono::Local;
 use globals::CONFIG;
-use std::io;
-use std::process::exit;
-use std::str::FromStr;
-use std::sync::OnceLock;
-use tracing::Level;
-use tracing::{error, info, level_filters::LevelFilter};
-use tracing_appender::non_blocking::WorkerGuard;
-use tracing_appender::rolling;
-use tracing_subscriber::prelude::*;
-use tracing_subscriber::{EnvFilter, fmt::time};
+use tracing::{
+    Level,
+    error,
+    info,
+    level_filters::LevelFilter,
+};
+use tracing_appender::{
+    non_blocking::WorkerGuard,
+    rolling,
+};
+use tracing_subscriber::{
+    EnvFilter,
+    fmt::time,
+    prelude::*,
+};
 
 const SCRIPTDIR: &str = "/usr/share/lfstage/scripts";
 static LOG_GUARD: OnceLock<WorkerGuard> = OnceLock::new();
@@ -96,6 +108,4 @@ fn log() {
     }
 }
 
-fn timestamp() -> String {
-    Local::now().format("%Y-%m-%d_%H-%M-%S").to_string()
-}
+fn timestamp() -> String { Local::now().format("%Y-%m-%d_%H-%M-%S").to_string() }

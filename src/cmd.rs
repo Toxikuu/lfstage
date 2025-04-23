@@ -1,7 +1,20 @@
-use std::io::{self, BufRead};
-use std::process::{Command, Stdio};
-use std::thread;
-use tracing::{debug, error, trace};
+use std::{
+    io::{
+        self,
+        BufRead,
+    },
+    process::{
+        Command,
+        Stdio,
+    },
+    thread,
+};
+
+use tracing::{
+    debug,
+    error,
+    trace,
+};
 
 pub fn exec(command: &str) -> io::Result<()> {
     let mut child = Command::new("bash")
@@ -21,10 +34,10 @@ pub fn exec(command: &str) -> io::Result<()> {
         let reader = io::BufReader::new(stdout);
         for line in reader.lines() {
             match line {
-                Ok(line) => {
+                | Ok(line) => {
                     trace!(" [STDOUT] {line}");
-                }
-                Err(e) => error!("Error reading stdout: {e}"),
+                },
+                | Err(e) => error!("Error reading stdout: {e}"),
             }
         }
     });
@@ -33,10 +46,10 @@ pub fn exec(command: &str) -> io::Result<()> {
         let reader = io::BufReader::new(stderr);
         for line in reader.lines() {
             match line {
-                Ok(line) => {
+                | Ok(line) => {
                     debug!(" [STDERR] {line}");
-                }
-                Err(e) => error!("Error reading stderr: {e}"),
+                },
+                | Err(e) => error!("Error reading stderr: {e}"),
             }
         }
     });

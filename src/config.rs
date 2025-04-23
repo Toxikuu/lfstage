@@ -1,18 +1,19 @@
-use serde::Deserialize;
 use std::fs;
+
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 #[serde(default)]
 pub struct Config {
     pub custom_tarball: Option<String>,
-    pub log_level: String,
+    pub log_level:      String,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
             custom_tarball: None,
-            log_level: "debug".to_string(),
+            log_level:      "debug".to_string(),
         }
     }
 }
