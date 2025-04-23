@@ -1,12 +1,3 @@
-# TODO: Use loopback instead
-disk = "/dev/nvme2n1" # the disk that will be formatted and LFS will be built on - currently only supports sda and nvme, though I may switch to using loopback devices in the future
-          # example: /dev/nvme1n1
-          # alt example: /dev/sda
-
-build_pre = true # whether to build chapters 1-4
-
-build_ch5and6 = true # whether to build chapters 5 and 6
-build_ch7 = true # whether to build chapter 7
-
-custom_tarball = "tox.tar.xz" # which custom tarball to extract to / in the stage2 right before the stagefile is packaged
-                              # use an empty string to disable this, or delete the line entirely
+# which custom tarball to extract to / in the stage2 right before the stagefile is packaged
+# use an empty string to disable this, or delete the line entirely
+custom_tarball = "tox.tar.xz"

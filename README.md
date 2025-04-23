@@ -1,16 +1,75 @@
 # LFStage
-A utility for creating stage2 tarballs for LFS
+**A utility for creating LFS stage files**
 
-### Usage
-LFStage must currently be executed from its source directory (you'll probably want to edit things anyway, so it's just another reason to keep the sources around)
+## Introduction
+LFStage builds LFS [stage files](https://wiki.gentoo.org/wiki/Stage_file).
 
-It is executed with `target/release/lfstage` as root
+It uses rust to wrap a series of bash scripts, stored in `scripts/`, which build
+the stage file.
 
-Toggle which chapters of the LFS book you want to follow in the config.toml (important: also specify the disk that is formatted)
+The scripts do the following:
+- Check system requirements
+- Download sources
+- Set up and mount a loopback device to `/mnt/lfstage`
+- Complete chapters 5, 6, and 7 of [Linux From Scratch](https://linuxfromscratch.org/lfs)
+- Clean up
+- Save the stage file to `/var/tmp/lfstage/stages/lfstage@<timestamp>.tar.xz`
 
-Feel free to tweak the scripts in scripts/ and environment files in envs/ (important: note that the lfs user is not made)
+LFStage makes a few opinionated optimizations:
+- Packages are built with more restrictive flags and less support for
+  old/uncommon software and hardware. And also without nls. Sorry.
+- All executable binaries are stripped with `strip --strip-unneeded`.
+- The stage files are compressed with `xz -9e`[^1].
+- "Unnecessary" files are removed[^2].
+- Texinfo is skipped[^3].
 
-Currently no flags are supported, and they probably won't be for some time
+[^1]: There are plans to make this configurable.
 
-### Dependencies
-LFStage depends on everything LFS depends on, in addition to (optionally) upx for binary packing
+[^2]: The files are snapped out of existence at the end of
+    `scripts/libexec/chroot.sh` if you'd like to see what you're missing.
+
+[^3]: Genuinely why is this in Chapter 7 at all? It is not critical and nothing
+    before Chapter 8 even depends on it.
+
+## Installation
+To install LFStage run the following commands:
+```bash
+make
+make install
+```
+
+If you'd like to examine the structure of LFStage, execute the following
+commands as well:
+```bash
+make DESTDIR="$PWD/DESTDIR" install
+tree DESTDIR
+```
+
+## Dependencies
+LFStage depends on a rust compiler, though a binary tarball is also provided as
+a release asset.
+
+LFStage checks via `scripts/00-reqs.sh` to ensure the system meets the minimum
+requirements to build LFS when run.
+
+## Usage
+To build a stage file, logging everything to the console, execute the following
+command:
+```bash
+LOG_LEVEL=trace lfstage
+```
+
+This command takes roughly 30 minutes on my system, though your mileage will
+vary depending on your hardware.
+
+LFStage writes a log to `/var/log/lfstage.log`, though the log level is limited
+to debug because writing trace-level logs results in a massive log file.
+
+## Todos
+I'd like to support the following features in the future:
+- Configure script, supporting standard variables
+- Simple argument parsing with clap
+- More configuration options
+    - Compression algorithm
+- Support for multiple stages
+- Support custom file trees specified in `/etc/lfstage/custom/`

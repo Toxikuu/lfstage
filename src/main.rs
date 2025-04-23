@@ -1,10 +1,6 @@
 // src/main.rs
 
-#![deny(
-    clippy::perf,
-    clippy::todo,
-    clippy::complexity,
-)]
+#![deny(clippy::perf, clippy::todo, clippy::complexity)]
 #![warn(
     clippy::all,
     clippy::pedantic,
@@ -17,52 +13,84 @@
     // clippy::cargo,
 )]
 
+mod cmd;
 mod config;
 mod globals;
-mod cmd;
-mod macros;
-mod utils;
 
-use log::{info, error};
+use chrono::Local;
 use globals::CONFIG;
-use log4rs::config::Deserializers;
+use std::io;
+use std::process::exit;
+use std::str::FromStr;
+use std::sync::OnceLock;
+use tracing::Level;
+use tracing::{info, level_filters::LevelFilter};
+use tracing_appender::non_blocking::WorkerGuard;
+use tracing_appender::rolling;
+use tracing_subscriber::prelude::*;
+use tracing_subscriber::{EnvFilter, fmt::time};
+
+const SCRIPTDIR: &str = "/usr/share/lfstage/scripts";
+static LOG_GUARD: OnceLock<WorkerGuard> = OnceLock::new();
 
 fn build() -> Result<(), std::io::Error> {
+    info!("Beginning stagefile build");
+    let ts = timestamp();
 
-    info!("Beginning stage2 build");
+    info!("Executing prebuild scripts");
+    exec!("{SCRIPTDIR}/00-reqs.sh")?;
+    exec!("{SCRIPTDIR}/01-setup.sh")?;
+    exec!("{SCRIPTDIR}/02-getsources.sh")?;
 
-    if CONFIG.disk.is_empty() {
-        error!("Specify a disk in the config.toml!");
-    }
+    info!("Building chapter 5");
+    exec!("{SCRIPTDIR}/05-chapter5.sh")?;
+    info!("Building chapter 6");
+    exec!("{SCRIPTDIR}/06-chapter6.sh")?;
+    info!("Building chapter 7");
+    exec!("TS={ts} {SCRIPTDIR}/07-chapter7.sh")?;
 
-    if CONFIG.build_pre {
-        info!("Executing prebuild scripts");
-        // check LFS requirements
-        cmd::exec("scripts/reqs.sh")?;
-
-        // preform prebuild steps
-        let command = format!("DISK='{}' scripts/prebuild.sh", CONFIG.disk);
-        cmd::exec(&command)?;
-    }
-
-    // complete chapter 5 and 6
-    if CONFIG.build_ch5and6 {
-        info!("Executing chapter 5 and 6 steps");
-        cmd::exec("scripts/ch5and6.sh")?;
-    }
-
-    // complete chapter 7
-    if CONFIG.build_ch7 {
-        info!("Executing chapter 7 steps");
-        let command = format!("CUSTOM_TARBALL='{}' scripts/ch7.sh", CONFIG.custom_tarball.clone().unwrap_or_default());
-        cmd::exec(&command)?;
-    }
-
-    info!("Built stage2");
+    info!("Saved stagefile to /var/tmp/lfstage/lfstage@{ts}.tar.xz");
     Ok(())
 }
 
 fn main() {
-    log4rs::init_file("log4rs.yaml", Deserializers::default()).unwrap();
-    let _ = build(); // to avoid printing anything on errors
+    check_perms();
+    log();
+    let _ = build();
+}
+
+fn check_perms() {
+    if unsafe { libc::geteuid() } != 0 {
+        eprintln!("Run this as root");
+        exit(1);
+    }
+}
+
+fn log() {
+    let file_appender = rolling::never("/var/log", "lfstage.log");
+    let (file_writer, guard) = tracing_appender::non_blocking(file_appender);
+
+    let level = LevelFilter::from_str(&CONFIG.log_level).unwrap_or(LevelFilter::DEBUG);
+    let filter = EnvFilter::builder()
+        .with_default_directive(level.into())
+        .with_env_var("LOG_LEVEL")
+        .from_env_lossy();
+
+    // Trace-level logs will only be written to stdout as they take up a lot of space
+    tracing_subscriber::fmt()
+        .with_env_filter(filter)
+        .with_level(true)
+        .with_target(true)
+        .with_timer(time::uptime())
+        .with_writer(file_writer.with_max_level(Level::DEBUG).and(io::stdout))
+        .compact()
+        .init();
+
+    LOG_GUARD
+        .set(guard)
+        .expect("log() was called more than once");
+}
+
+fn timestamp() -> String {
+    Local::now().format("%Y-%m-%d_%H-%M-%S").to_string()
 }

@@ -1,11 +1,13 @@
 use std::io::{self, BufRead};
 use std::process::{Command, Stdio};
 use std::thread;
-use crate::{pr, erm};
-use log::{debug, error};
+use tracing::{debug, error, trace};
 
 pub fn exec(command: &str) -> io::Result<()> {
     let mut child = Command::new("bash")
+        .arg("--rcfile")
+        .arg("/usr/share/lfstage/envs/base.env")
+        .arg("-e")
         .arg("-c")
         .arg(command)
         .stdout(Stdio::piped())
@@ -20,10 +22,9 @@ pub fn exec(command: &str) -> io::Result<()> {
         for line in reader.lines() {
             match line {
                 Ok(line) => {
-                    pr!("{line}");
-                    debug!("{line}");
+                    trace!(" [STDOUT] {line}");
                 }
-                Err(e) => erm!("Error reading stdout: {e}"),
+                Err(e) => error!("Error reading stdout: {e}"),
             }
         }
     });
@@ -33,17 +34,16 @@ pub fn exec(command: &str) -> io::Result<()> {
         for line in reader.lines() {
             match line {
                 Ok(line) => {
-                    pr!("\x1b[31;3;1m{line}");
-                    debug!("[ERR] {line}");
+                    debug!(" [STDERR] {line}");
                 }
-                Err(e) => erm!("Error reading stderr: {e}"),
+                Err(e) => error!("Error reading stderr: {e}"),
             }
         }
     });
 
     let status = child.wait()?;
     if !status.success() {
-        error!("Culprit: `{command}`");
+        error!("Command failed with status {status}");
         return Err(io::Error::new(
             io::ErrorKind::Other,
             format!("Command failed with status: {status}"),
@@ -54,4 +54,11 @@ pub fn exec(command: &str) -> io::Result<()> {
     stderr_thread.join().unwrap();
 
     Ok(())
+}
+
+#[macro_export]
+macro_rules! exec {
+    ($($cmd:tt)*) => {{
+        $crate::cmd::exec(&format!($($cmd)*))
+    }};
 }
