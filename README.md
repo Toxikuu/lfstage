@@ -17,7 +17,7 @@ The scripts do the following:
 
 LFStage makes a few opinionated optimizations:
 - Packages are built with more restrictive flags and less support for
-  old/uncommon software and hardware. And also without nls. Sorry.
+  old/uncommon software and hardware. And also without NLS. Sorry.
 - All executable binaries are stripped with `strip --strip-unneeded`.
 - All test suites, excepting sanity checks, are skipped.
 - The stage files are compressed with `xz -9e`[^1].
