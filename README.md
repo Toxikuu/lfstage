@@ -35,7 +35,7 @@ LFStage makes a few opinionated optimizations:
 To install LFStage run the following commands:
 ```bash
 make
-make install
+sudo make install
 ```
 
 If you'd like to examine the structure of LFStage, execute the following
@@ -54,7 +54,7 @@ requirements to build LFS when run.
 
 ## Usage
 To build a stage file, logging everything to the console, execute the following
-command:
+command as the root user:
 ```bash
 LOG_LEVEL=trace lfstage
 ```
