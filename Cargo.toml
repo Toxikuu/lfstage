@@ -1,22 +1,32 @@
 [package]
 name = "lfstage"
-authors = [ "Toxikuu" ]
-version = "2.0.0" # complete overhaul
+version = "2.0.1"
 edition = "2024"
+authors = [ "Toxikuu" ]
+description = "LFS stage file generator"
+license = "GPL-3.0"
+
+[profile.release]
+strip = "symbols"
+lto = "thin"
+panic = "abort"
 
 [dependencies]
 libc = "0.2"
-serde = { version = "1.0", features = [ "derive" ] }
 serde_derive = "1.0"
 toml = "0.8"
 tracing = "0.1"
 tracing-appender = "0.2"
 
-[dependencies.tracing-subscriber]
-version = "0.3"
-features = [ "env-filter" ]
-
 [dependencies.chrono]
 version = "0.4"
 default-features = false
 features = [ "clock", "std" ]
+
+[dependencies.serde]
+version = "1.0"
+features = [ "derive" ]
+
+[dependencies.tracing-subscriber]
+version = "0.3"
+features = [ "env-filter" ]
