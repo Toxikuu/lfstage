@@ -45,7 +45,7 @@ use tracing_subscriber::{
 const SCRIPTDIR: &str = "/usr/share/lfstage/scripts";
 static LOG_GUARD: OnceLock<WorkerGuard> = OnceLock::new();
 
-fn build() -> Result<(), std::io::Error> {
+fn build() -> Result<(), io::Error> {
     info!("Beginning stage file build");
     let ts = timestamp();
 
