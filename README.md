@@ -47,7 +47,7 @@ tree DESTDIR
 ```
 
 ## Dependencies
-LFStage depends on a rust compiler, though a binary tarball is also provided as
+LFStage depends on a rust compiler, unless you'd rather use a binary provided as
 a release asset[^4].
 
 [^4]: An LFStage-generated stage file is also provided as a release asset.
@@ -66,25 +66,30 @@ This command takes roughly 30 minutes on my system, though your mileage will
 vary depending on your hardware.
 
 LFStage writes a log to `/var/log/lfstage.log`, though the log level is limited
-to debug because writing trace-level logs results in a massive log file.
+to debug because writing trace-level logs results in a massive log file. Issuing
+the following `sed` before compiling will write everything to the log file:
+```bash
+sed '/with_max_level/s/DEBUG/TRACE/' -i src/main.rs
+```
 
 ## Todos
-- `./configure` script, supporting standard variables
-- Simple argument parsing with [clap](https://github.com/clap-rs/clap)
-- More configuration options
-    - Compression algorithm
-    - Image size (with minimum)
-- Support for multiple stages
-- Support custom file trees specified in `/etc/lfstage/custom/`
-- GitHub actions
-    - Formatting
-        - Trimming white space
-        - Rustfmt
-    - Test
-        - Lint
-        - Nextest
-        - Audit
-    - Release
-        - Changelog
-        - Build stage file
-        - LFStage binary tarball
+- [ ] `./configure` script, supporting standard variables
+- [ ] Simple argument parsing with [clap](https://github.com/clap-rs/clap)
+- [ ] More configuration options
+    - [ ] Compression algorithm
+   ~Image size (with minimum)~
+- [ ] Drop the loopback device entirely as it's unnecessary
+- [ ] Support for multiple stages
+- [ ] Support custom file trees specified in `/etc/lfstage/custom/`
+- [ ] GitHub actions
+    - [ ] Formatting
+        - [ ] Trimming white space
+        - [ ] Rustfmt
+    - [ ] Test
+        - [ ] Lint
+        - [ ] Nextest
+        - [ ] Audit
+    - [ ] Release
+        - [ ] Changelog
+        - [ ] Build stage file
+        - [ ] LFStage binary tarball
