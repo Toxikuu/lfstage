@@ -83,7 +83,7 @@ cat gcc/limitx.h gcc/glimits.h gcc/limity.h > \
 post gcc
 
 
-# 5.4. Linux-6.14.2 API Headers
+# 5.4. Linux-6.14.6 API Headers
 pre linux
 
 make mrproper

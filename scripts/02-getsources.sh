@@ -19,14 +19,14 @@ https://astron.com/pub/file/file-5.46.tar.gz
 https://ftp.gnu.org/gnu/findutils/findutils-4.10.0.tar.xz
 https://ftp.gnu.org/gnu/gawk/gawk-5.3.2.tar.xz
 https://ftp.gnu.org/gnu/gcc/gcc-14.2.0/gcc-14.2.0.tar.xz
-https://ftp.gnu.org/gnu/gettext/gettext-0.24.tar.xz
+https://ftp.gnu.org/gnu/gettext/gettext-0.25.tar.xz
 https://ftp.gnu.org/gnu/glibc/glibc-2.41.tar.xz
 https://www.linuxfromscratch.org/patches/lfs/development/glibc-2.41-fhs-1.patch
 https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz
 https://ftp.gnu.org/gnu/grep/grep-3.12.tar.xz
 https://ftp.gnu.org/gnu/gzip/gzip-1.14.tar.xz
-https://www.kernel.org/pub/linux/kernel/v6.x/linux-6.14.2.tar.xz
-https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.xz
+https://www.kernel.org/pub/linux/kernel/v6.x/linux-6.14.6.tar.xz
+https://ftp.gnu.org/gnu/m4/m4-1.4.20.tar.xz
 https://ftp.gnu.org/gnu/make/make-4.4.1.tar.gz
 https://ftp.gnu.org/gnu/mpc/mpc-1.3.1.tar.gz
 https://ftp.gnu.org/gnu/mpfr/mpfr-4.2.2.tar.xz
@@ -38,6 +38,7 @@ https://ftp.gnu.org/gnu/sed/sed-4.9.tar.xz
 https://ftp.gnu.org/gnu/tar/tar-1.35.tar.xz
 https://www.kernel.org/pub/linux/utils/util-linux/v2.41/util-linux-2.41.tar.xz
 https://github.com//tukaani-project/xz/releases/download/v5.8.1/xz-5.8.1.tar.xz
+https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz
 EOF
 
 msg "Fetching sources"

@@ -190,6 +190,15 @@ unset _custom_cfg_opts
 
 post util-linux
 
+# 8.10 Zstd-1.5.7 (anachronous)
+pre zstd
+
+make prefix=/usr
+make prefix=/usr install
+rm -vf /usr/lib/libzstd.a
+
+post zstd
+
 # Cleanup and junk removal
 # Roughly corresponds to Chapter 7.13
 # WARN: The removal of some of these may cause issues
@@ -240,5 +249,5 @@ post util-linux
         -exec rm -vf {} \;
 )
 
+# Ephemeral file used to denote success
 touch /good
-exit 0

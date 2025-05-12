@@ -9,7 +9,7 @@ source "${LFSTAGE_ENVS:?}/build.env"
 
 cd "${LFS:?}/sources" || die "Failed to enter $LFS/sources"
 
-# 6.2. M4-1.4.19 
+# 6.2. M4-1.4.20
 pre m4
 
 ./configure --prefix=/usr       \
