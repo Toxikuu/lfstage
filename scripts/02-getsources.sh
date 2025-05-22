@@ -34,22 +34,23 @@ SOURCE_URLS=(
     "https://www.python.org/ftp/python/3.13.3/Python-3.13.3.tar.xz"
     "https://ftp.gnu.org/gnu/sed/sed-4.9.tar.xz"
     "https://ftp.gnu.org/gnu/tar/tar-1.35.tar.xz"
+    "https://ftp.gnu.org/gnu/texinfo/texinfo-7.2.tar.xz"
     "https://www.kernel.org/pub/linux/utils/util-linux/v2.41/util-linux-2.41.tar.xz"
     "https://github.com//tukaani-project/xz/releases/download/v5.8.1/xz-5.8.1.tar.xz"
     "https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz"
 )
 
 # Write sources list
-printf "%s\n" "${SOURCE_URLS[@]}" > "${LFSTAGE_SOURCES_TXT:?}"
+printf "%s\n" "${SOURCE_URLS[@]}" > "$LFSTAGE_SOURCES_TXT"
 
 msg "Fetching sources"
 # Fetch without overwriting, continuing, prefixed to $LFSTAGE_SOURCES, from the
 # list $LFSTAGE_SOURCES_TXT
-wget -c --no-clobber -P "${LFSTAGE_SOURCES:?}" -i "${LFSTAGE_SOURCES_TXT:?}"
+wget -c --no-clobber -P "$LFSTAGE_SOURCES" -i "$LFSTAGE_SOURCES_TXT"
 
 # Copy sources
-mkdir -v      "${LFS:?}/sources"
-chmod -v a+wt "${LFS:?}/sources"
+mkdir -v      "$LFS/sources"
+chmod -v a+wt "$LFS/sources"
 
 # Create a list of registered sources, and delete all unregistered files in the
 # source directory.
@@ -73,5 +74,5 @@ done
 popd &>/dev/null
 
 # Copy sources to the chroot
-cp -vf "${LFSTAGE_SOURCES}/"* "${LFS:?}/sources"
+cp -vf "$LFSTAGE_SOURCES/"* "$LFS/sources"
 msg "Fetched all sources"

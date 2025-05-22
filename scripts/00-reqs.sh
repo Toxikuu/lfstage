@@ -1,6 +1,5 @@
 #!/bin/bash
 # Script to ensure the host system meets minimum requirements
-#
 # NOTE: envs/base.env is sourced before anything from scripts/ is run.
 
 # shellcheck disable=SC1091,SC2086
@@ -82,18 +81,12 @@ ver_check 'Texinfo     ' 'texi2any' 5.0
 ver_check 'Xz          ' 'xz      ' 5.0.0
 
 header "Kernel"
-ver_kernel 6.11 # or lower glibc's requested kernel versions and this to 5.4
+ver_kernel 6.14 # A lower version can be used, with 5.4 being what LFS uses
 
 if mount | grep -q 'devpts on /dev/pts' && [ -e /dev/ptmx ]; then
     ok "kernel supports UNIX 98 PTY"
 else
     err "kernel does NOT support UNIX 98 PTY"
-fi
-
-if [ -e /dev/loop0 ]; then
-    ok "kernel supports loopback devices"
-else
-    err "kernel does NOT support loopback devices"
 fi
 
 alias_check() {

@@ -4,22 +4,17 @@
 # shellcheck disable=SC2086,SC2164,SC1091,SC2046
 # TODO: Explicitly disable acl and xattrs
 
-source /usr/share/lfstage/envs/base.env
-source "${LFSTAGE_ENVS:?}/build.env"
-
-cd "${LFS:?}/sources" || die "Failed to enter $LFS/sources"
+source "$LFSTAGE_ENVS/build.env"
+cd "$LFS/sources" || die "Failed to enter $LFS/sources"
 
 # 6.2. M4-1.4.20
 pre m4
 
 ./configure --prefix=/usr       \
-            --host=${LFS_TGT:?} \
-            --disable-rpath     \
-            --disable-nls       \
-            --disable-assert    \
+            --host=$LFS_TGT     \
             --build=$(build-aux/config.guess)
 make
-make DESTDIR=${LFS:?} install
+make DESTDIR=$LFS install
 
 post m4
 
@@ -36,28 +31,26 @@ popd
 
 _cfg_opts=(
     --prefix=/usr
-    --host=${LFS_TGT:?}
+    --host=$LFS_TGT
     --build=$(./config.guess)
     --mandir=/usr/share/man
     --with-manpage-format=normal
     --with-shared
-    --without-normal
     --with-cxx-shared
+    --without-normal
     --without-debug
     --without-ada
     --disable-stripping
     AWK=gawk
-
-    --without-develop
 )
 
 ./configure ${_cfg_opts[@]}
 
 make
-make DESTDIR=${LFS:?} TIC_PATH=$(pwd)/build/progs/tic install
-ln -sv libncursesw.so ${LFS:?}/usr/lib/libncurses.so
+make DESTDIR=$LFS TIC_PATH=$(pwd)/build/progs/tic install
+ln -sv libncursesw.so $LFS/usr/lib/libncurses.so
 sed -e 's/^#if.*XOPEN.*$/#if 1/' \
-    -i ${LFS:?}/usr/include/curses.h
+    -i $LFS/usr/include/curses.h
 
 post ncurses
 
@@ -70,15 +63,12 @@ _cfg_opts=(
     --build=$(sh support/config.guess)
     --host=$LFS_TGT
     --without-bash-malloc
-
-    --disable-nls
-    --disable-rpath
 )
 
 ./configure ${_cfg_opts[@]}
 
 make
-make DESTDIR="$LFS" install
+make DESTDIR=$LFS install
 ln -sv bash $LFS/bin/sh
 
 post bash
@@ -87,25 +77,11 @@ post bash
 # 6.5. Coreutils-9.7
 pre coreutils
 
-# WARN: Several programs are disabled. This may cause issues.
-./configure --prefix=/usr                     \
-            --host=$LFS_TGT                   \
-            --build=$(build-aux/config.guess) \
-            --disable-nls                     \
-            --disable-rpath                   \
-            --disable-assert                  \
-            --enable-no-install-program=\
-            hostname,\
-            kill,\
-            uptime,\
-            vdir,\
-            pinky,\
-            hostid,\
-            sha224sum,\
-            sha384sum,\
-            shred,\
-            who,\
-            nl
+./configure --prefix=/usr                       \
+            --host=$LFS_TGT                     \
+            --build=$(build-aux/config.guess)   \
+            --enable-install-program=hoshtname  \
+            --enable-no-install-program=kill,uptime
 make
 make DESTDIR=$LFS install
 
@@ -122,8 +98,6 @@ pre diffutils
 
 ./configure --prefix=/usr   \
             --host=$LFS_TGT \
-            --disable-nls   \
-            --disable-rpath \
             gl_cv_func_strcasecmp_works=y \
             --build=$(./build-aux/config.guess)
 make
@@ -158,9 +132,6 @@ pre findutils
 
 ./configure --prefix=/usr                   \
             --localstatedir=/var/lib/locate \
-            --disable-nls                   \
-            --disable-rpath                 \
-            --disable-assert                \
             --host=$LFS_TGT                 \
             --build=$(build-aux/config.guess)
 make
@@ -175,8 +146,6 @@ pre gawk
 sed -i 's/extras//' Makefile.in
 ./configure --prefix=/usr   \
             --host=$LFS_TGT \
-            --disable-nls   \
-            --disable-rpath \
             --build=$(build-aux/config.guess)
 make
 make DESTDIR=$LFS install
@@ -189,9 +158,6 @@ pre grep
 
 ./configure --prefix=/usr    \
             --host=$LFS_TGT  \
-            --disable-nls    \
-            --disable-rpath  \
-            --disable-assert \
             --build=$(./build-aux/config.guess)
 make
 make DESTDIR=$LFS install
@@ -214,8 +180,6 @@ pre make
 
 ./configure --prefix=/usr   \
             --host=$LFS_TGT \
-            --disable-nls   \
-            --disable-rpath \
             --build=$(build-aux/config.guess)
 make
 make DESTDIR=$LFS install
@@ -240,9 +204,6 @@ pre sed
 
 ./configure --prefix=/usr    \
             --host=$LFS_TGT  \
-            --disable-assert \
-            --disable-nls    \
-            --disable-rpath  \
             --build=$(./build-aux/config.guess)
 make
 make DESTDIR=$LFS install
@@ -255,8 +216,6 @@ pre tar
 
 ./configure --prefix=/usr   \
             --host=$LFS_TGT \
-            --disable-rpath \
-            --disable-nls   \
             --build=$(build-aux/config.guess)
 make
 make DESTDIR=$LFS install
@@ -270,7 +229,6 @@ pre xz
 ./configure --prefix=/usr                     \
             --host=$LFS_TGT                   \
             --build=$(build-aux/config.guess) \
-            --disable-rpath --disable-nls     \
             --disable-static
 make
 make DESTDIR=$LFS install
@@ -355,3 +313,5 @@ make DESTDIR=$LFS install
 ln -sfv gcc $LFS/usr/bin/cc
 
 post gcc
+
+msg "Finished Chapter 7" >&2

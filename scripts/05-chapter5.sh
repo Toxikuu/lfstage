@@ -3,10 +3,8 @@
 
 # shellcheck disable=SC2086,SC2164,SC1091,SC2046
 
-source /usr/share/lfstage/envs/base.env
-source "${LFSTAGE_ENVS:?}/build.env"
-
-cd "${LFS:?}/sources" || die "Failed to enter $LFS/sources"
+source "$LFSTAGE_ENVS/build.env"
+cd "$LFS/sources" || die "Failed to enter $LFS/sources"
 
 
 # 5.2. Binutils-2.44 - Pass 1
@@ -15,13 +13,13 @@ pre binutils
 mkdir -v build
 cd       build
 
-../configure --prefix=${LFS:?}/tools \
-             --with-sysroot=${LFS:?} \
-             --target=${LFS_TGT:?}   \
-             --disable-nls           \
-             --enable-gprofng=no     \
-             --disable-werror        \
-             --enable-new-dtags      \
+../configure --prefix=$LFS/tools \
+             --with-sysroot=$LFS \
+             --target=$LFS_TGT   \
+             --disable-nls       \
+             --enable-gprofng=no \
+             --disable-werror    \
+             --enable-new-dtags  \
              --enable-default-hash-style=gnu
 
 make
@@ -115,16 +113,16 @@ echo "rootsbindir=/usr/sbin" > configparms
 
 ../configure                             \
       --prefix=/usr                      \
-      --host=${LFS_TGT:?}                \
+      --host=$LFS_TGT                    \
       --build=$(../scripts/config.guess) \
-      --enable-kernel=6.11               \
+      --enable-kernel=6.14               \
       --disable-nscd                     \
       libc_cv_slibdir=/usr/lib
 
 make
-make DESTDIR=${LFS:?} install
+make DESTDIR=$LFS install
 
-sed '/RTLDLIST=/s@/usr@@g' -i ${LFS:?}/usr/bin/ldd
+sed '/RTLDLIST=/s@/usr@@g' -i $LFS/usr/bin/ldd
 
 msg "Performing some sanity checks..." >&2
 echo 'int main(){}' | $LFS_TGT-gcc -x c - -v -Wl,--verbose &> dummy.log
@@ -158,7 +156,7 @@ cd       build
     --with-gxx-include-dir=/tools/$LFS_TGT/include/c++/14.2.0
 
 make
-make DESTDIR=${LFS:?} install
+make DESTDIR=$LFS install
 
 rm -v $LFS/usr/lib/lib{stdc++{,exp,fs},supc++}.la
 

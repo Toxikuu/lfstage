@@ -33,6 +33,10 @@ cat > /etc/hostname << EOF
 lfstage
 EOF
 
+cat > /etc/resolv.conf << EOF
+nameserver 1.1.1.1
+EOF
+
 cat > /etc/passwd << "EOF"
 root:x:0:0:root:/root:/bin/bash
 bin:x:1:1:bin:/dev/null:/usr/bin/false
@@ -77,14 +81,15 @@ chmod -v 600  /var/log/btmp
 # Just to be safe
 # shellcheck disable=SC1091
 . /etc/profile
-cd sources
+set -eu
+cd /sources
 
 # 7.7. Gettext-0.24
 pre gettext
 
-./configure --disable-shared --disable-rpath --disable-nls
+./configure --disable-shared
 make
-install -vm755 gettext-tools/src/{msgfmt,msgmerge,xgettext} -t /usr/bin
+cp -v gettext-tools/src/{msgfmt,msgmerge,xgettext} /usr/bin
 
 post gettext
 
@@ -92,7 +97,7 @@ post gettext
 # 7.8. Bison-3.8.2
 pre bison
 
-./configure --prefix=/usr --disable-nls --disable-assert --disable-rpath
+./configure --prefix=/usr
 make
 make install
 
@@ -132,41 +137,34 @@ make install
 
 post Python
 
-# NOTE: Texinfo is skipped
+
+# 7.11 Texinfo-7.2
+pre texinfo
+
+./configure --prefix=/usr
+make
+make install
+
+post texinfo
+
 
 # 7.12. Util-linux-2.41
 pre util-linux
 
 mkdir -pv /var/lib/hwclock
 
+# WARN: Configure option divergence from LFS
 _custom_cfg_opts=(
     # disable some utils
     --disable-bfs
     --disable-cramfs
     --disable-minix
-    --disable-cal
-    --disable-ul
-    --disable-wall
-    --disable-mesg
+    # --disable-cal
+    # --disable-ul
+    # --disable-wall
+    # --disable-mesg
     --disable-rename
     --disable-more
-
-    # disable junk
-    --disable-assert
-    --disable-rpath
-    --disable-nls
-
-    --without-econf
-    --without-user
-    --without-systemd
-    --without-systemdsystemunitdir
-    --with-gnu-ld
-    --without-ncurses
-    --with-ncursesw
-
-    # explicitly force python3
-    --without-python
-    --with-python=3
 )
 
 ./configure --libdir=/usr/lib      \
@@ -190,6 +188,7 @@ unset _custom_cfg_opts
 
 post util-linux
 
+
 # 8.10 Zstd-1.5.7 (anachronous)
 pre zstd
 
@@ -198,6 +197,7 @@ make prefix=/usr install
 rm -vf /usr/lib/libzstd.a
 
 post zstd
+
 
 # Cleanup and junk removal
 # Roughly corresponds to Chapter 7.13
@@ -209,6 +209,7 @@ post zstd
     # remove lfstage artifacts
     rm -rf /{tools,sources}
     rm -vf /chroot.sh
+    rm -vf /etc/profile
 
     # remove documentation
     rm -rf /usr/share/{man,info,doc}/*
@@ -221,9 +222,6 @@ post zstd
     # remove idle
     rm -vf /usr/bin/idle3*
     rm -rf /usr/lib/python3.*/idlelib
-
-    # remove the temporary /etc/profile
-    rm -vf /etc/profile
 
     # remove libtool archives
     find /usr/{lib,libexec} -name '*.la' -exec rm -vf {} \;
