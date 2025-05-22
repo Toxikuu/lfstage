@@ -17,9 +17,8 @@ use tracing::{
 };
 
 pub fn exec(command: &str) -> io::Result<()> {
+    let command = format!("source /usr/share/lfstage/envs/base.env && {command}");
     let mut child = Command::new("bash")
-        .arg("--rcfile")
-        .arg("/usr/share/lfstage/envs/base.env")
         .arg("-e")
         .arg("-c")
         .arg(command)
@@ -57,10 +56,9 @@ pub fn exec(command: &str) -> io::Result<()> {
     let status = child.wait()?;
     if !status.success() {
         error!("Command failed with status {status}");
-        return Err(io::Error::new(
-            io::ErrorKind::Other,
-            format!("Command failed with status: {status}"),
-        ));
+        return Err(io::Error::other(format!(
+            "Command failed with status: {status}"
+        )));
     }
 
     stdout_thread.join().unwrap();
