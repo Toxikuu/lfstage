@@ -73,14 +73,23 @@ sed '/with_max_level/s/DEBUG/TRACE/' -i src/main.rs
 ```
 
 ## Todos
+- [ ] Write documentation
+    - [ ] --help
+    - [ ] man
+    - [ ] docs
 - [ ] `./configure` script, supporting standard variables
 - [ ] Simple argument parsing with [clap](https://github.com/clap-rs/clap)
 - [ ] More configuration options
     - [ ] Compression algorithm
-   ~Image size (with minimum)~
-- [ ] Drop the loopback device entirely as it's unnecessary
-- [ ] Support for multiple stages
-- [ ] Support custom file trees specified in `/etc/lfstage/custom/`
+    - [ ] Cflags
+    - [ ] Jobs
+- [x] Drop the loopback device entirely as it's unnecessary
+- [ ] Support for custom stages
+    - [ ] Should be done via a profile system in
+    `/var/lib/lfstage/profiles/<profile>`
+- [ ] ~Support custom file trees specified in `/etc/lfstage/custom/`~ Should be
+  handled by custom profiles instead.
+- [ ] Remove the stuff currently in custom/
 - [ ] GitHub actions
     - [ ] Formatting
         - [ ] Trimming white space
