@@ -2,24 +2,31 @@
 # Script to build chapter 6 of LFS
 
 # shellcheck disable=SC2086,SC2164,SC1091,SC2046
-# TODO: Explicitly disable acl and xattrs
+# TODO: Consider disabling acl and xattrs
+# TODO: Disable rpath, nls, and assert where available
 
-source "$LFSTAGE_ENVS/build.env"
-cd "$LFS/sources" || die "Failed to enter $LFS/sources"
+source "$ENVS/build.env"
+cd "$LFS/sources"
 
-# 6.2. M4-1.4.20
+# 6.2. M4
 pre m4
+
+export BUILD="$(build-aux/config.guess)"
 
 ./configure --prefix=/usr       \
             --host=$LFS_TGT     \
-            --build=$(build-aux/config.guess)
+            --build=$BUILD      \
+            --disable-nls       \
+            --disable-rpath     \
+            --disable-assert    \
+            --with-packager=Tox
 make
 make DESTDIR=$LFS install
 
 post m4
 
 
-# 6.3. Ncurses-6.5
+# 6.3. Ncurses
 pre ncurses
 
 mkdir build
@@ -29,22 +36,28 @@ pushd build
   make -C progs tic
 popd
 
-_cfg_opts=(
+_cfg=(
     --prefix=/usr
     --host=$LFS_TGT
-    --build=$(./config.guess)
-    --mandir=/usr/share/man
-    --with-manpage-format=normal
+    --build=$BUILD
+    --without-manpages
     --with-shared
+    --without-tests
     --with-cxx-shared
     --without-normal
     --without-debug
+    --without-develop
+    --without-profile
+    --without-dlsym
     --without-ada
     --disable-stripping
+    --disable-home-terminfo
     AWK=gawk
 )
 
-./configure ${_cfg_opts[@]}
+./configure "${_cfg[@]}"
+
+unset _cfg
 
 make
 make DESTDIR=$LFS TIC_PATH=$(pwd)/build/progs/tic install
@@ -55,17 +68,22 @@ sed -e 's/^#if.*XOPEN.*$/#if 1/' \
 post ncurses
 
 
-# 6.4. Bash-5.2.37
+# 6.4. Bash
 pre bash
 
 _cfg_opts=(
     --prefix=/usr
-    --build=$(sh support/config.guess)
+    --build=$BUILD
     --host=$LFS_TGT
     --without-bash-malloc
+    --disable-bang-history
+    --disable-nls
+    --disable-rpath
 )
 
-./configure ${_cfg_opts[@]}
+./configure "${_cfg_opts[@]}"
+
+unset _cfg
 
 make
 make DESTDIR=$LFS install
@@ -74,12 +92,18 @@ ln -sv bash $LFS/bin/sh
 post bash
 
 
-# 6.5. Coreutils-9.7
+# 6.5. Coreutils
 pre coreutils
 
 ./configure --prefix=/usr                       \
             --host=$LFS_TGT                     \
-            --build=$(build-aux/config.guess)   \
+            --build=$BUILD                      \
+            --with-packager=Tox                 \
+            --disable-assert                    \
+            --disable-rpath                     \
+            --disable-nls                       \
+            --disable-systemd                   \
+            --enable-single-binary=symlinks     \
             --enable-install-program=hoshtname  \
             --enable-no-install-program=kill,uptime
 make
@@ -93,79 +117,109 @@ sed -i 's/"1"/"8"/'                    $LFS/usr/share/man/man8/chroot.8
 post coreutils
 
 
-# 6.6. Diffutils-3.12
+# 6.6. Diffutils
 pre diffutils
 
-./configure --prefix=/usr   \
-            --host=$LFS_TGT \
-            gl_cv_func_strcasecmp_works=y \
-            --build=$(./build-aux/config.guess)
+./configure --prefix=/usr                   \
+            --host=$LFS_TGT                 \
+            --build=$BUILD                  \
+            --disable-rpath                 \
+            --disable-nls                   \
+            gl_cv_func_strcasecmp_works=y
 make
 make DESTDIR=$LFS install
 
 post diffutils
 
 
-# 6.7. File-5.46
+# 6.7. File
 pre file
 
-mkdir build
+_cfg=(
+    --disable-libseccomp
+    --disable-zlib
+    --disable-bzlib
+    --disable-xzlib
+    --disable-lzlib
+    --disable-zstdlib
+    --disable-lrziplib
+    --disable-shared
+    --disable-static
+)
+
+mkdir -v build
 pushd build
-  ../configure --disable-bzlib      \
-               --disable-libseccomp \
-               --disable-xzlib      \
-               --disable-zlib
-  make
+    ../configure "${_cfg[@]}"
+    make
 popd
 
-./configure --prefix=/usr --host=$LFS_TGT --build=$(./config.guess)
+./configure "${_cfg[@]}"    \
+    --prefix=/usr           \
+    --host=$LFS_TGT         \
+    --build=$BUILD          \
+    --enable-shared         \
+    --datadir=/usr/share/file
+
+unset _cfg
+
 make FILE_COMPILE=$(pwd)/build/src/file
 make DESTDIR=$LFS install
-
 rm -v $LFS/usr/lib/libmagic.la
 
 post file
 
 
-# 6.8. Findutils-4.10.0
+# 6.8. Findutils
 pre findutils
 
 ./configure --prefix=/usr                   \
             --localstatedir=/var/lib/locate \
             --host=$LFS_TGT                 \
-            --build=$(build-aux/config.guess)
+            --build=$BUILD                  \
+            --disable-assert                \
+            --disable-nls                   \
+            --disable-rpath                 \
+            --with-packager=Tox
 make
 make DESTDIR=$LFS install
 
 post findutils
 
 
-# 6.9. Gawk-5.3.2
+# 6.9. Gawk
 pre gawk
 
 sed -i 's/extras//' Makefile.in
+# WARN: --disable-lint may be problematic(?)
 ./configure --prefix=/usr   \
             --host=$LFS_TGT \
-            --build=$(build-aux/config.guess)
+            --build=$BUILD  \
+            --disable-lint  \
+            --disable-nls   \
+            --disable-rpath
 make
 make DESTDIR=$LFS install
 
 post gawk
 
 
-# 6.10. Grep-3.12
+# 6.10. Grep
 pre grep
 
-./configure --prefix=/usr    \
-            --host=$LFS_TGT  \
-            --build=$(./build-aux/config.guess)
+./configure --prefix=/usr       \
+            --host=$LFS_TGT     \
+            --build=$BUILD      \
+            --disable-assert    \
+            --disable-nls       \
+            --disable-rpath     \
+            --with-packager=Tox
 make
 make DESTDIR=$LFS install
 
 post grep
 
 
-# 6.11. Gzip-1.14
+# 6.11. Gzip
 pre gzip
 
 ./configure --prefix=/usr --host=$LFS_TGT
@@ -175,60 +229,85 @@ make DESTDIR=$LFS install
 post gzip
 
 
-# 6.12. Make-4.4.1
+# 6.12. Make
 pre make
 
 ./configure --prefix=/usr   \
             --host=$LFS_TGT \
-            --build=$(build-aux/config.guess)
+            --build=$BUILD  \
+            --disable-nls   \
+            --disable-rpath
 make
 make DESTDIR=$LFS install
 
 post make
 
 
-# 6.13. Patch-2.8
+# 6.13. Patch
 pre patch
 
 ./configure --prefix=/usr   \
             --host=$LFS_TGT \
-            --build=$(build-aux/config.guess)
+            --build=$BUILD  \
+            --disable-xattr
 make
 make DESTDIR=$LFS install
 
 post patch
 
 
-# 6.14. Sed-4.9
+# 6.14. Sed
 pre sed
 
-./configure --prefix=/usr    \
-            --host=$LFS_TGT  \
-            --build=$(./build-aux/config.guess)
+./configure --prefix=/usr       \
+            --host=$LFS_TGT     \
+            --build=$BUILD      \
+            --disable-acl       \
+            --disable-i18n      \
+            --disable-assert    \
+            --disable-nls       \
+            --disable-rpath     \
+            --with-packager=Tox
 make
 make DESTDIR=$LFS install
 
 post sed
 
 
-# 6.15. Tar-1.35
+# 6.15. Tar
 pre tar
 
-./configure --prefix=/usr   \
-            --host=$LFS_TGT \
-            --build=$(build-aux/config.guess)
+./configure --prefix=/usr       \
+            --host=$LFS_TGT     \
+            --build=$BUILD      \
+            --disable-acl       \
+            --disable-nls       \
+            --disable-rpath     \
+            --without-xattrs    \
+            --with-packager=Tox
 make
 make DESTDIR=$LFS install
 
 post tar
 
 
-# 6.16. Xz-5.8.1
+# 6.16. Xz
 pre xz
 
-./configure --prefix=/usr                     \
-            --host=$LFS_TGT                   \
-            --build=$(build-aux/config.guess) \
+./configure --prefix=/usr           \
+            --host=$LFS_TGT         \
+            --build=$BUILD          \
+            --disable-microlzma     \
+            --disable-lzip-decoder  \
+            --enable-small          \
+            --enable-threads=posix  \
+            --disable-lzmadec       \
+            --disable-lzmainfo      \
+            --disable-lzma-links    \
+            --disable-scripts       \
+            --disable-doc           \
+            --disable-nls           \
+            --disable-rpath         \
             --disable-static
 make
 make DESTDIR=$LFS install
@@ -238,7 +317,7 @@ rm -v $LFS/usr/lib/liblzma.la
 post xz
 
 
-# 6.17. Binutils-2.44 - Pass 2
+# 6.17. Binutils - Pass 2
 pre binutils
 
 sed '6031s/$add_dir//' -i ltmain.sh
@@ -246,16 +325,16 @@ sed '6031s/$add_dir//' -i ltmain.sh
 mkdir -v build
 cd       build
 
-../configure                   \
-    --prefix=/usr              \
-    --build=$(../config.guess) \
-    --host=$LFS_TGT            \
-    --disable-nls              \
-    --enable-shared            \
-    --enable-gprofng=no        \
-    --disable-werror           \
-    --enable-64-bit-bfd        \
-    --enable-new-dtags         \
+../configure            \
+    --prefix=/usr       \
+    --build=$BUILD      \
+    --host=$LFS_TGT     \
+    --disable-nls       \
+    --enable-shared     \
+    --disable-gprofng   \
+    --disable-werror    \
+    --enable-64-bit-bfd \
+    --enable-new-dtags  \
     --enable-default-hash-style=gnu
 make
 make DESTDIR=$LFS install
@@ -265,7 +344,7 @@ rm -v $LFS/usr/lib/lib{bfd,ctf,ctf-nobfd,opcodes,sframe}.{a,la}
 post binutils
 
 
-# 6.18. GCC-14.2.0 - Pass 2
+# 6.18. GCC - Pass 2
 pre gcc
 
 tar -xf ../mpfr-4.2.2.tar.xz
@@ -288,23 +367,23 @@ sed '/thread_header =/s/@.*@/gthr-posix.h/' \
 mkdir -v build
 cd       build
 
-../configure                                       \
-    --build=$(../config.guess)                     \
-    --host=$LFS_TGT                                \
-    --target=$LFS_TGT                              \
-    LDFLAGS_FOR_TARGET=-L$PWD/$LFS_TGT/libgcc      \
-    --prefix=/usr                                  \
-    --with-build-sysroot=$LFS                      \
-    --enable-default-pie                           \
-    --enable-default-ssp                           \
-    --disable-nls                                  \
-    --disable-multilib                             \
-    --disable-libatomic                            \
-    --disable-libgomp                              \
-    --disable-libquadmath                          \
-    --disable-libsanitizer                         \
-    --disable-libssp                               \
-    --disable-libvtv                               \
+../configure                                    \
+    --build=$BUILD                              \
+    --host=$LFS_TGT                             \
+    --target=$LFS_TGT                           \
+    LDFLAGS_FOR_TARGET=-L$PWD/$LFS_TGT/libgcc   \
+    --prefix=/usr                               \
+    --with-build-sysroot=$LFS                   \
+    --enable-default-pie                        \
+    --enable-default-ssp                        \
+    --disable-nls                               \
+    --disable-multilib                          \
+    --disable-libatomic                         \
+    --disable-libgomp                           \
+    --disable-libquadmath                       \
+    --disable-libsanitizer                      \
+    --disable-libssp                            \
+    --disable-libvtv                            \
     --enable-languages=c,c++
 
 make
@@ -313,5 +392,3 @@ make DESTDIR=$LFS install
 ln -sfv gcc $LFS/usr/bin/cc
 
 post gcc
-
-msg "Finished Chapter 7" >&2

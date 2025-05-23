@@ -24,6 +24,12 @@ install -vdm 1777 /tmp /var/tmp
 # 7.6. Creating Essential Files and Symlinks
 ln -sfv /proc/self/mounts /etc/mtab
 
+cat > /etc/lfstage-release << EOF
+profile     ${LFSTAGE_PROFILE:-unknown}
+timestamp   $(date +%Y-%m-%d_%H-%M-%S)
+version     ${LFSTAGE_VERSION:-3.0.0-dev}
+EOF
+
 cat > /etc/hosts << EOF
 127.0.0.1  localhost lfstage
 ::1        localhost lfstage
@@ -87,7 +93,20 @@ cd /sources
 # 7.7. Gettext-0.24
 pre gettext
 
-./configure --disable-shared
+./configure \
+    --disable-shared    \
+    --disable-java      \
+    --disable-d         \
+    --disable-nls       \
+    --disable-rpath     \
+    --disable-modula2   \
+    --disable-acl       \
+    --disable-xattrs    \
+    --disable-csharp    \
+    --disable-go        \
+    --without-emacs     \
+    --without-git       \
+    --without-bzip2
 make
 cp -v gettext-tools/src/{msgfmt,msgmerge,xgettext} /usr/bin
 
@@ -138,10 +157,15 @@ make install
 post Python
 
 
+# TODO: Can probably be safely dropped
 # 7.11 Texinfo-7.2
 pre texinfo
 
-./configure --prefix=/usr
+./configure             \
+    --prefix=/usr       \
+    --disable-rpath     \
+    --disable-nls       \
+    --disable-tp-tests
 make
 make install
 
@@ -153,18 +177,53 @@ pre util-linux
 
 mkdir -pv /var/lib/hwclock
 
-# WARN: Configure option divergence from LFS
-_custom_cfg_opts=(
-    # disable some utils
+# WARN: Heavy configure option divergence from LFS
+_cfg=(
+    # disable obscure utils
     --disable-bfs
     --disable-cramfs
     --disable-minix
-    # --disable-cal
-    # --disable-ul
-    # --disable-wall
-    # --disable-mesg
-    --disable-rename
+    --disable-ul
+    --disable-wall
+    --disable-mesg
+
+    # disable utils with superior alternatives
     --disable-more
+    --disable-rename
+
+    # disable utils not needed in a stage2
+    --disable-cal
+    --disable-fdisks
+    --disable-losetup
+    --disable-zramctl
+    --disable-fsck
+    --disable-partx
+    --disable-wipefs
+    --disable-nsenter
+    --disable-eject
+    --disable-agetty
+    --disable-plymouth_support
+    --disable-mkfs
+    --disable-fstrim
+    --disable-swapon
+    --disable-last
+    --disable-raw
+    --disable-whereis # underrated util imo
+
+    # disable generic junk
+    --disable-assert
+    --disable-rpath
+    --disable-nls
+    --disable-bash-completion
+    --disable-pg-bell
+
+    # external
+    --without-udev
+    --without-econf
+    --without-systemd
+    --without-btrfs
+    --without-utempter
+    --without-slang
 )
 
 ./configure --libdir=/usr/lib      \
@@ -179,22 +238,24 @@ _custom_cfg_opts=(
             --disable-static       \
             --disable-liblastlog2  \
             --without-python       \
-            ${_custom_cfg_opts[@]} \
+            "${_cfg[@]}" \
             ADJTIME_PATH=/var/lib/hwclock/adjtime
 make
 make install
 
-unset _custom_cfg_opts
+unset _cfg
 
 post util-linux
 
 
 # 8.10 Zstd-1.5.7 (anachronous)
+# Specialized build to only produce a binary capable of zst decompression,
+# omitting support for everything else. Also optimized for size.
 pre zstd
 
-make prefix=/usr
-make prefix=/usr install
-rm -vf /usr/lib/libzstd.a
+make -dC        programs zstd-decompress
+strip -s        programs/zstd-decompress
+install -vDm755 programs/zstd-decompress /usr/bin/zstd
 
 post zstd
 
@@ -215,6 +276,7 @@ post zstd
     rm -rf /usr/share/{man,info,doc}/*
 
     # remove unused binaries
+    # TODO: This can almost certainly be heavily expanded
     rm -vf /usr/bin/tzselect
     rm -vf /usr/bin/{perl,bash,gawk}{bug,thanks}
     rm -vf /usr/bin/*zmore
@@ -244,7 +306,7 @@ post zstd
     # remove unused locales
     find /usr/share/locale/ -type d \
         ! -name 'en*'   \
-        -exec rm -vf {} \;
+        -exec rm -rf {} +
 )
 
 # Ephemeral file used to denote success
