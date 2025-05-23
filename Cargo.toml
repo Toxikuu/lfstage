@@ -1,6 +1,6 @@
 [package]
 name = "lfstage"
-version = "2.2.0"
+version = "3.0.0-dev"
 edition = "2024"
 authors = [ "Toxikuu" ]
 description = "LFS stage file generator"
@@ -8,15 +8,27 @@ license = "GPL-3.0"
 
 [profile.release]
 strip = "symbols"
-lto = "thin"
+# lto = "thin"
 panic = "abort"
 
 [dependencies]
+fshelpers = { git = "https://github.com/Toxikuu/fshelpers.git" }
+clap = { version = "4.5.38", features = ["derive"] }
+is_executable = "1.0.4"
 libc = "0.2"
 serde_derive = "1.0"
+thiserror = "2.0.12"
 toml = "0.8"
 tracing = "0.1"
 tracing-appender = "0.2"
+tokio = { version = "1.45.0", features = ["full"] }
+reqwest = { version = "0.12.15", features = ["stream"] }
+futures = "0.3.31"
+indicatif = "0.17.11"
+async-once-cell = "0.5.4"
+which = "7.0.3"
+httpdate = "1.0.3"
+permitit = "0.1.1"
 
 [dependencies.chrono]
 version = "0.4"

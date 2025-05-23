@@ -1,3 +1,11 @@
+# LFStage 3.0.0-dev
+- Complete overhaul
+- Argument parsing with clap
+- Refactoring
+- Stage file profile support
+- In-house source downloads
+- Improved file hierarchy
+
 # LFStage 2.2.0
 - Delete unregistered sources
 - Adjust configure options
