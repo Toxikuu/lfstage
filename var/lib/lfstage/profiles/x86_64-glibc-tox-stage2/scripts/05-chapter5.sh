@@ -3,7 +3,7 @@
 
 # shellcheck disable=SC2086,SC2164,SC1091,SC2046
 
-source "$LFSTAGE_ENVS/build.env"
+source "$ENVS/build.env"
 cd "$LFS/sources" || die "Failed to enter $LFS/sources"
 
 
@@ -124,7 +124,7 @@ make DESTDIR=$LFS install
 
 sed '/RTLDLIST=/s@/usr@@g' -i $LFS/usr/bin/ldd
 
-msg "Performing some sanity checks..." >&2
+msg "Performing some sanity checks..."
 echo 'int main(){}' | $LFS_TGT-gcc -x c - -v -Wl,--verbose &> dummy.log
 readelf -l a.out | grep ': /lib'
 
@@ -135,7 +135,7 @@ grep "/lib.*/libc.so.6 " dummy.log
 grep found dummy.log
 
 rm -v a.out dummy.log
-msg "All good" >&2
+msg "All good"
 
 post glibc
 
