@@ -116,17 +116,11 @@ else
     ok "nproc reports $(nproc) logical cores are available"
 fi
 
+header "Networking check"
 if ping -c1 'google.com' &>/dev/null; then
     ok "connected to the internet"
 else
     err "NOT connected to the internet"
-fi
-
-header "Networking check"
-if command -v wget &>/dev/null; then
-    ok "wget works"
-else
-    err "wget does NOT work"
 fi
 
 echo
