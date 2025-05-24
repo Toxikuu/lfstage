@@ -147,13 +147,13 @@ mod test {
 
     #[test]
     #[should_panic(expected = "Nonexistent script")]
-    fn test_exec_failure() { assert!(exec!("x86_64-glibc-tox-stage2"; "cat /usr").is_err()) }
+    fn test_exec_failure() { assert!(exec!("testing"; "cat /usr").is_err()) }
 
     #[test]
     fn test_exec_success_on_reqs() {
         assert!(
             exec!(
-                "x86_64-glibc-tox-stage2";
+                "testing";
                 "/usr/lib/lfstage/scripts/reqs.sh"
             )
             .is_ok()
@@ -164,7 +164,7 @@ mod test {
     fn ensure_shell_options() {
         assert!(
             exec!(
-                "x86_64-glibc-tox-stage2";
+                "testing";
                 "/usr/lib/lfstage/scripts/testing.sh"
             )
             .is_ok()
