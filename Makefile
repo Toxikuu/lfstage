@@ -7,8 +7,11 @@ clean:
 	cargo clean
 
 test:
-	@echo -e "\x1b[37;1m[\x1b[31mWARNING\x1b[37m]\x1b[0m The test suite assumes LFStage is installed" >&2
-	@sleep 1
+	@echo -e "\x1b[37;1m[\x1b[31mWARNING\x1b[37m]\x1b[0m The test suite assumes LFStage is installed"                 >&2
+	@echo -e "\x1b[37;1m[\x1b[31mWARNING\x1b[37m]\x1b[0m It also makes assumptions about the environment it's run in" >&2
+	@echo -e "\x1b[37;1m[\x1b[31mWARNING\x1b[37m]\x1b[0m Lastly, it's meant to be run by the maintainer"              >&2
+	@echo -e "\x1b[37;1m[\x1b[31mWARNING\x1b[37m]\x1b[0m In other words, take test failures with a grain of salt"     >&2
+	@sleep 4
 	cargo test
 
 install:
