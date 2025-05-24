@@ -76,7 +76,7 @@ fn create_client() -> Result<Client, reqwest::Error> {
             );
             headers
         })
-        .timeout(Duration::from_secs(32))
+        .connect_timeout(Duration::from_secs(32))
         .build()
 }
 
@@ -114,8 +114,6 @@ pub fn parse_dl(dl: String) -> (String, String) {
         (dl.to_string(), f.to_string())
     }
 }
-
-use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum DownloadError {
@@ -181,21 +179,23 @@ async fn download_file<P: AsRef<Path>>(
 
     // Write the file
     while let Some(chunk) = stream.next().await {
-        // this hack is necessary because hyper is flaky as FUCK
-        // we touch the chunk to force some lazy evaluation somewhere i think
-        // either way the chunk stops being invalid after it gets formatted! lol!!
-        // and this gets wrapped in a black_box so it doesn't get optimized out
-        // discovered with https://ftp.gnu.org/gnu/gcc/gcc-14.2.0/gcc-14.2.0.tar.xz
-        std::hint::black_box(format!("{chunk:#?}"));
+        let data = match chunk {
+            | Ok(d) => d,
+            | Err(ref e) => {
+                error!("Invalid chunk: {e}");
+                unravel!(e);
+                exit(1)
+            },
+        };
 
-        let data = chunk.inspect_err(|e| warn!("Invalid chunk: {e}"))?;
         partfile.write_all(&data)?;
     }
     partfile.flush()?; // paranoia
 
     // Move the part file to its final destination
     fs::rename(partfile_str, file_path)?;
-    debug!("Downloaded '{url}' to '{}'", file_path.display());
+    info!("Downloaded '{url}'");
+    debug!("Downloaded {}", file_path.display());
 
     Ok(())
 }
