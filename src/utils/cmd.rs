@@ -160,14 +160,14 @@ macro_rules! exec {
 #[cfg(test)]
 mod test {
     #[test]
-    fn test_no_profile() { assert!(exec!("/usr/lib/lfstage/scripts/testing.sh").is_ok()) }
+    fn exec_no_profile() { assert!(exec!("/usr/lib/lfstage/scripts/testing.sh").is_ok()) }
 
     #[test]
     #[should_panic(expected = "Nonexistent script")]
-    fn test_exec_failure() { assert!(exec!("testing"; "cat /usr").is_err()) }
+    fn exec_nonexistent_script() { assert!(exec!("testing"; "cat /usr").is_err()) }
 
     #[test]
-    fn test_exec_success_on_reqs() {
+    fn exec_pass_reqs() {
         assert!(
             exec!(
                 "testing";
@@ -178,7 +178,7 @@ mod test {
     }
 
     #[test]
-    fn ensure_shell_options() {
+    fn exec_ensure_shell_options() {
         assert!(
             exec!(
                 "testing";
@@ -189,7 +189,7 @@ mod test {
     }
 
     // #[test]
-    // fn test_exec_failure_on_script() {
+    // fn exec_script_fails() {
     //     assert!(
     //         exec!(
     //             "x86_64-glibc-tox-stage2";
