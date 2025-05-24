@@ -110,9 +110,11 @@ Add a section that links to other LFStage profiles here and link to those ^.
     - [ ] `lfstage import path/to/<profile>.tar.xz`
         - [ ] Support `lfstage import <https://git.repo.git>`
     - [ ] `lfstage export <profile> <optional-destination>.tar.xz`
+- [ ] Add a profile struct (low priority)
 - [ ] Write documentation
     - [ ] man
     - [ ] docs
+    - [ ] code
 - [ ] `./configure` script, supporting standard variables
 - [ ] More configuration options
     - [ ] Jobs
