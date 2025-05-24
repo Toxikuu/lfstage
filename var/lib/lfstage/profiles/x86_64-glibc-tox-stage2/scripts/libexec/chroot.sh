@@ -157,19 +157,7 @@ make install
 post Python
 
 
-# TODO: Can probably be safely dropped
-# 7.11 Texinfo-7.2
-pre texinfo
-
-./configure             \
-    --prefix=/usr       \
-    --disable-rpath     \
-    --disable-nls       \
-    --disable-tp-tests
-make
-make install
-
-post texinfo
+# NOTE: Texinfo is skipped
 
 
 # 7.12. Util-linux-2.41
@@ -186,6 +174,7 @@ _cfg=(
     --disable-ul
     --disable-wall
     --disable-mesg
+    --disable-vdir
 
     # disable utils with superior alternatives
     --disable-more
@@ -202,7 +191,16 @@ _cfg=(
     --disable-nsenter
     --disable-eject
     --disable-agetty
+    --disable-wdctl
+    --disable-unshare
+    --disable-isosize
+    --disable-uclampset
     --disable-plymouth_support
+    --disable-irqtop
+    --disable-ionice
+    --disable-ipcs
+    --disable-prlimit
+    --disable-taskset
     --disable-mkfs
     --disable-fstrim
     --disable-swapon
@@ -260,54 +258,131 @@ install -vDm755 programs/zstd-decompress /usr/bin/zstd
 post zstd
 
 
+# Change directory to somewhere safe. We are currently in /sources which gets
+# removed. This avoids issues with popd later.
+cd /
+
+
 # Cleanup and junk removal
 # Roughly corresponds to Chapter 7.13
 # WARN: The removal of some of these may cause issues
-(
-    # remove temporary files
-    rm -rf {,/var}/tmp/*
 
-    # remove lfstage artifacts
-    rm -rf /{tools,sources}
-    rm -vf /chroot.sh
-    rm -vf /etc/profile
+# remove temporary files
+rm -rf {,/var}/tmp/*
 
-    # remove documentation
-    rm -rf /usr/share/{man,info,doc}/*
+# remove lfstage artifacts
+rm -rf /{tools,sources}
+rm -vf /chroot.sh
+rm -vf /etc/profile
 
-    # remove unused binaries
-    # TODO: This can almost certainly be heavily expanded
-    rm -vf /usr/bin/tzselect
-    rm -vf /usr/bin/{perl,bash,gawk}{bug,thanks}
-    rm -vf /usr/bin/*zmore
+# remove documentation
+rm -rf /usr/share/{man,info,doc}/*
 
-    # remove idle
-    rm -vf /usr/bin/idle3*
-    rm -rf /usr/lib/python3.*/idlelib
-
-    # remove libtool archives
-    find /usr/{lib,libexec} -name '*.la' -exec rm -vf {} \;
-
-    # remove stray readmes
-    find / -type f -name 'README*' -exec rm -vf {} \;
-
-    # remove batch scripts
-    find / -type f -name '*.bat' -exec rm -vf {} \;
-
-    # remove uncommon character encodings
-    # (utf8 is built into glibc)
-    find /usr/lib/gconv -type f  \
-        ! -name 'ISO8859-1.so'   \
-        ! -name 'UTF-16.so'      \
-        ! -name 'UTF-32.so'      \
-        ! -name 'gconv-modules*' \
-        -exec rm -vf {} \;
-
-    # remove unused locales
-    find /usr/share/locale/ -type d \
-        ! -name 'en*'   \
-        -exec rm -rf {} +
+# remove unused binaries and scripts
+# TODO: Look into:
+# - stty
+# - sum
+# - sha224sum, sha384sum
+# - shred
+# - setarch, x86_64
+# - script*
+# - ptar*
+# - pr
+# - pldd
+# - csplit
+_del=(
+    base32
+    bits # TODO: Figure out what even provides this lol
+    chcon # selinux
+    chmem
+    choom
+    chrt # this isn't a realtime system
+    cksum
+    clear
+    corelist
+    coresched
+    cpan
+    hexdump
+    df
+    dmesg # it isn't useful in a stage 2
+    gawkbug
+    gzexe
+    instmodsh
+    libnetcfg
+    logname # similar to whoami, kinda useless
+    look
+    lsclocks
+    lsfd
+    lsipc
+    lsirq
+    lslogins
+    lslocks
+    lsns
+    lto-dump # huge (42M) binary that I probably dont need
+    namei
+    nice
+    nsenter
+    pathchk
+    perl{bug,thanks}
+    piconv
+    pipesz
+    pydoc{,3}*
+    renice # not needed in a stage 2
+    runcon # selinux
+    tzselect
+    vdir
+    wdctl
+    xzcat
+    xzcmp
+    xzdiff
+    xz*grep
+    xzless
+    sotruss
+    zipdetails
+    zcmp
+    zdiff
+    zdump
+    z*grep
+    zforce
+    zless
+    znew
 )
+
+pushd /usr/bin
+rm -vf "${_del[@]}"
+unset _del
+popd
+
+# use symlinks for gawk instead of a duplicate binary
+rm -vf /usr/bin/gawk
+ln -sv gawk-5.3.2 /usr/bin/gawk
+
+# remove idle
+rm -vf /usr/bin/idle3*
+rm -rf /usr/lib/python3.*/idlelib
+
+# remove libtool archives
+find /usr/{lib,libexec} -name '*.la' -exec rm -vf {} \;
+
+# remove stray readmes
+find / -type f -name 'README*' -exec rm -vf {} \;
+
+# remove batch scripts
+find / -type f -name '*.bat' -exec rm -vf {} \;
+
+# remove uncommon character encodings
+# (utf8 is built into glibc)
+find /usr/lib/gconv -type f  \
+    ! -name 'ISO8859-1.so'   \
+    ! -name 'UTF-16.so'      \
+    ! -name 'UTF-32.so'      \
+    ! -name 'gconv-modules*' \
+    -exec rm -vf {} \;
+
+# remove unused locales
+find /usr/share/locale/ -type d \
+    ! -name 'en*'   \
+    -exec rm -rvf {} +
 
 # Ephemeral file used to denote success
 touch /good

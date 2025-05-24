@@ -49,50 +49,26 @@ install -vm755 "$SCRIPT_DIR/libexec/chroot.sh" "$LFS/chroot.sh"
 # UPDATE:
 # This is most likely caused by some esoteric failure related to the
 # temporary build of bash not liking profiles.
-chroot "$LFS" /usr/bin/env -i \
-    HOME=/root                    \
-    TERM=xterm-256color           \
-    PATH=/usr/bin:/usr/sbin       \
-    SOURCES=/sources              \
-    MAKEFLAGS=-j$(nproc)          \
-    TESTSUITEFLAGS=-j$(nproc)     \
-    /bin/bash --login -euo pipefail /chroot.sh || die "Something failed in chroot" 7
+chroot "$LFS" /usr/bin/env -i                   \
+    HOME=/root                                  \
+    TERM=xterm-256color                         \
+    PATH=/usr/bin:/usr/sbin                     \
+    SOURCES=/sources                            \
+    MAKEFLAGS=-j$(nproc)                        \
+    TESTSUITEFLAGS=-j$(nproc)                   \
+    /bin/bash --login -euo pipefail /chroot.sh ||
+die "Something failed in chroot" 7
 
 # Unmount virtual kernel file systems
-umount "$LFS/dev/shm" || true
-umount "$LFS/dev/pts"
-umount "$LFS/"{sys,proc,run,dev}
+umount -v "$LFS/dev/shm" || true
+umount -v "$LFS/dev/pts"
+umount -v "$LFS/"{sys,proc,run,dev}
 
 msg "Exited LFS chroot"
 
 # Sanity check
+# This isn't necessary but it doesn't hurt
 if [[ ! -e "$LFS/good" ]]; then
     die "Detected a failure in LFS chroot"
 fi
 rm -vf "$LFS/good"
-
-# Sanity checks
-if [[ "$LFS" != "/var/lib/lfstage/mount" ]]; then
-    die "\$LFS isn't properly set" 33
-fi
-
-if ! lsblk | grep "$LFS" &>/dev/null; then
-    die "Couldn't find '$LFS' in lsblk output"
-fi
-
-# Mass strip
-msg "Mass stripping..."
-find "$LFS" -type f -executable -exec file {} + |
-    grep 'not stripped' |
-    cut -d: -f1         |
-    xargs strip -v --strip-unneeded
-msg "Stripped!"
-
-# Save
-msg "Saving stage file..."
-cd "$LFS"
-XZ_OPT=-9e tar -cJpf "/tmp/lfstage-v3-$(date +%Y-%m-%d_%H-%M-%S).tar.xz" .
-
-cd
-umount -R "$LFS"
-msg "Done!"
