@@ -1,9 +1,9 @@
 <h1 align="center">
 LFStage
 </h1>
-<h4 align="center">
+<h2 align="center">
 LFS stage file generator
-</h4>
+</h2>
 
 ## Introduction
 LFStage builds [LFS](https://www.linuxfromscratch.org/)
