@@ -50,7 +50,12 @@ LFStage depends on a rust compiler. That's about it.
  TODO: Cache results of reqs.sh, maybe in /tmp/lfstage/reqs.cache, so it's
 not run more than once per boot.
 
-Also consider adding support for per-profile `reqs.sh`'s.
+Also consider adding support for per-profile `reqs.sh`'s. If I do this, have a
+reqs.env defining the basic functions to reduce boilerplate for profile authors.
+
+Yeah I probably should add per-profile `reqs.sh` support. It's nice to be able
+to check you meet requirements before running `build`, and it would allow
+profile authors a standard way to define profile requirements.
 -->
 LFStage will run `./usr/lib/lfstage/scripts/reqs.sh` before building which
 performs any final checks.
@@ -85,6 +90,10 @@ Ideas:
 
 ## Todos
 - [ ] Address all comment todos
+- [ ] Add more subcommands
+    - [ ] `lfstage reqs <profile>` assuming I add per-profile reqs.sh support
+    - [ ] `lfstage import path/to/<profile>.tar.xz`
+    - [ ] `lfstage export <profile> <optional-destination>.tar.xz`
 - [ ] Write documentation
     - [ ] man
     - [ ] docs
