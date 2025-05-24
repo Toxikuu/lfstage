@@ -8,9 +8,7 @@
     clippy::unwrap_used,
     clippy::expect_used,
     clippy::panic,
-    unused,
-    // missing_docs,
-    // clippy::cargo,
+    unused
 )]
 
 mod cli;
@@ -26,7 +24,7 @@ use tracing::error;
 async fn main() {
     utils::init::init();
     if let Err(e) = cli::Cli::parse().run().await {
-        error!("LFStage failed: {e}");
+        error!("{e}");
         exit(1);
     }
 }

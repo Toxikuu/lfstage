@@ -13,13 +13,15 @@ pub static CONFIG: LazyLock<Config> = LazyLock::new(Config::load);
 pub struct Config {
     pub custom_tarball: Option<String>,
     pub log_level:      String,
+    pub strip:          bool,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
             custom_tarball: None,
-            log_level:      "debug".to_string(),
+            log_level:      "trace".to_string(),
+            strip:          true,
         }
     }
 }

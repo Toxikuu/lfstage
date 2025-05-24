@@ -1,12 +1,10 @@
 // cli/clean.rs
 
-use std::{
-    fs,
-    io,
-};
+use std::io;
 
 use clap::Args;
-use fshelpers::mkdir_p;
+
+use crate::exec;
 
 #[derive(Args, Debug)]
 pub struct Cmd {
@@ -17,7 +15,7 @@ pub struct Cmd {
 impl Cmd {
     pub fn run(&self) -> Result<(), super::CmdError> {
         if self.dry {
-            println!("Would remove the contents of /var/lib/lfstage/mount");
+            println!("Would recursively unmount and remove the contents of /var/lib/lfstage/mount");
             return Ok(())
         }
 
@@ -26,7 +24,4 @@ impl Cmd {
     }
 }
 
-pub fn clean_lfs() -> io::Result<()> {
-    fs::remove_dir_all("/var/lib/lfstage/mount")?;
-    mkdir_p("/var/lib/lfstage/mount")
-}
+pub fn clean_lfs() -> io::Result<()> { exec!("/usr/lib/lfstage/scripts/clean.sh") }
