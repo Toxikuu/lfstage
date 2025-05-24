@@ -91,6 +91,10 @@ Ideas:
 ## Todos
 - [ ] Address all comment todos
 - [ ] Add more subcommands
+    - [ ] `lfstage view` should list the available profiles
+        - [ ] `lfstave view <profile>` should list details about a profile
+            - [ ] Add a system for profile metadata containing information like
+              a description, author, notes, etc.
     - [ ] `lfstage reqs <profile>` assuming I add per-profile reqs.sh support
     - [ ] `lfstage import path/to/<profile>.tar.xz`
     - [ ] `lfstage export <profile> <optional-destination>.tar.xz`
