@@ -90,6 +90,7 @@ Ideas:
 
 ## Todos
 - [ ] Address all comment todos
+- [ ] Make `lfstage build` run the download logic if any sources are missing
 - [ ] Add more subcommands
     - [ ] `lfstage view` should list the available profiles
         - [ ] `lfstave view <profile>` should list details about a profile
