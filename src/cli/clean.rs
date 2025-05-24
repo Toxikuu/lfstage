@@ -13,6 +13,8 @@ pub struct Cmd {
 }
 
 impl Cmd {
+    // TODO: Add options to clean a specific profile. Cleaning should remove unregistered source
+    // files, and optionally all source files, in addition to running `clean_lfs()`.
     pub fn run(&self) -> Result<(), super::CmdError> {
         if self.dry {
             println!("Would recursively unmount and remove the contents of /var/lib/lfstage/mount");
