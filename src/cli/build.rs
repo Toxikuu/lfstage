@@ -38,7 +38,7 @@ use crate::{
 
 #[derive(Args, Debug)]
 pub struct Cmd {
-    #[arg(default_value = "x86_64-glibc-tox-stage2")]
+    #[arg(default_value = CONFIG.default_profile.as_str())]
     pub profile: String,
 
     /// The path to save the stagefile to. Should be absolute.

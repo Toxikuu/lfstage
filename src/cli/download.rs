@@ -9,14 +9,17 @@ use tracing::{
 };
 
 use super::CmdError;
-use crate::utils::dl::{
-    download_sources,
-    read_dls_from_file,
+use crate::{
+    config::CONFIG,
+    utils::dl::{
+        download_sources,
+        read_dls_from_file,
+    },
 };
 
 #[derive(Args, Debug)]
 pub struct Cmd {
-    #[arg(default_value = "x86_64-glibc-tox-stage2")]
+    #[arg(default_value = CONFIG.default_profile.as_str())]
     pub profile: String,
 
     /// Whether to forcibly download sources
