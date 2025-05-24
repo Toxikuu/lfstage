@@ -25,6 +25,7 @@ async fn main() {
     utils::init::init();
     if let Err(e) = cli::Cli::parse().run().await {
         error!("{e}");
+        unravel!(e);
         exit(1);
     }
 }

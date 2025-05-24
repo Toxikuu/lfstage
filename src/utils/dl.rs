@@ -15,6 +15,13 @@ use std::{
         PathBuf,
     },
     process::exit,
+    sync::{
+        Arc,
+        atomic::{
+            AtomicBool,
+            Ordering,
+        },
+    },
     time::{
         Duration,
         SystemTime,
@@ -37,15 +44,20 @@ use reqwest::{
     },
     redirect::Policy,
 };
+use thiserror::Error;
 use tokio::task;
 use tracing::{
     debug,
     error,
+    info,
     trace,
-    warn,
 };
 
+use crate::unravel;
+
 // TODO: Documentation
+// NOTE: Beware the distinction between timeout and connect_timeout
+//
 /// # Creates a reqwest client
 ///
 /// This client follows up to 16 redirects and has a timeout of 32 seconds. It also sets the user
@@ -139,7 +151,7 @@ async fn download_file<P: AsRef<Path>>(
     let file_path = file_path.as_ref();
 
     // Fetch the url
-    debug!("Fetching url '{url}'");
+    debug!("Fetching '{url}'");
     let resp = client
         .get(url)
         // .header(ACCEPT_ENCODING, "identity")
@@ -161,6 +173,7 @@ async fn download_file<P: AsRef<Path>>(
         return Err(DownloadError::Extant(file_path.to_owned()));
     }
 
+    info!("Downloading '{url}'");
     // Create a part file
     let partfile_str = format!("{}.part", file_path.display());
     let mut partfile = File::create(&partfile_str)?;
@@ -192,11 +205,13 @@ pub async fn download_sources<P: AsRef<Path>, Q: AsRef<Path>>(
     sources_dir: Q,
     download_extant: bool,
 ) -> Result<(), DownloadError> {
+    let failed = Arc::new(AtomicBool::new(false));
     let client = match create_client() {
         | Ok(c) => c,
-        | Err(e) => {
+        | Err(ref e) => {
             error!("Failed to create reqwest client: {e}");
             error!("Unable to download sources :(");
+            unravel!(e);
             exit(1)
         },
     };
@@ -207,25 +222,30 @@ pub async fn download_sources<P: AsRef<Path>, Q: AsRef<Path>>(
 
     for dl in dls {
         let client = client.clone();
+        let failed = Arc::clone(&failed);
         let (url, filename) = parse_dl(dl);
         let file_path = sources_dir.as_ref().join(&filename);
 
         let task = task::spawn(async move {
-            match download_file(client, &url, file_path, download_extant)
+            if let Err(e) = download_file(client, &url, file_path, download_extant)
                 .await
                 .permit(|e| matches!(e, DownloadError::Extant(_)))
             {
-                | Ok(()) => {},
-                | Err(e) => {
-                    warn!("Failed to download {url} to {filename}: {e}");
-                },
+                error!("Failed to download {url} to {filename}: {e}");
+                unravel!(e);
+                failed.store(false, Ordering::Relaxed);
             }
         });
         tasks.push(task);
     }
 
     join_all(tasks).await;
-    Ok(())
+    if failed.load(Ordering::Relaxed) {
+        error!("Failed to download one or more sources");
+        exit(1)
+    } else {
+        Ok(())
+    }
 }
 
 /// # Read dl's from a file

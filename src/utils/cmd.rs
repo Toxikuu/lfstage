@@ -20,6 +20,8 @@ use tracing::{
     trace,
 };
 
+use crate::unravel;
+
 // TODO: Create a thiserror for script failures prolly
 
 // This could be written to take environment variables as vector argument but I cba
@@ -94,7 +96,10 @@ EOF
                 | Ok(line) => {
                     trace!(" [STDOUT] {line}");
                 },
-                | Err(e) => error!("Error reading stdout: {e}"),
+                | Err(e) => {
+                    unravel!(e);
+                    error!("Error reading stdout: {e}");
+                },
             }
         }
     });
@@ -106,7 +111,10 @@ EOF
                 | Ok(line) => {
                     debug!(" [STDERR] {line}");
                 },
-                | Err(e) => error!("Error reading stderr: {e}"),
+                | Err(e) => {
+                    unravel!(e);
+                    error!("Error reading stderr: {e}");
+                },
             }
         }
     });
@@ -129,13 +137,22 @@ EOF
 macro_rules! exec {
     // Pattern: profile and a script
     ($profile:expr; $script:expr) => {{
-        tracing::debug!("Using profile {} to execute script {:?}", $profile, $script);
+        use std::path::Path;
+        tracing::debug!(
+            "Using profile '{}' to execute script '{}'",
+            $profile,
+            Path::new($script).display(),
+        );
         $crate::utils::cmd::exec(Some($profile), $script)
     }};
 
     // Pattern: just a script
     ($script:expr) => {{
-        tracing::debug!("Executing {:?} without a profile", $script);
+        use std::path::Path;
+        tracing::debug!(
+            "Executing {} without a profile",
+            Path::new($script).display(),
+        );
         $crate::utils::cmd::exec(None, $script)
     }};
 }
