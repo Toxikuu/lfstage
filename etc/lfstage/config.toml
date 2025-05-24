@@ -1,3 +1,11 @@
-# which custom tarball to extract to / in the stage2 right before the stage file is packaged
-# use an empty string to disable this, or delete the line entirely
-custom_tarball = "tox.tar.xz"
+# LFStage config
+#
+# Defaults are used here, but they may be outdated. To view the available
+# options and defaults, visit any of the following:
+# - https://github.com/Toxikuu/lfstage/blob/master/src/config.rs
+# - TODO: Link to documentation whenever it's written
+
+default_profile = "x86_64-glibc-tox-stage2"
+strip = true
+log_level = "trace"
+log_max_size = "10 MB"
