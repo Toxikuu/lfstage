@@ -25,6 +25,7 @@ use super::{
     clean::clean_lfs,
 };
 use crate::{
+    config::CONFIG,
     exec,
     utils::{
         dl::{
@@ -40,11 +41,20 @@ pub struct Cmd {
     #[arg(default_value = "x86_64-glibc-tox-stage2")]
     pub profile: String,
 
+    /// The path to save the stagefile to. Should be absolute.
     pub stagefile: Option<String>,
 
+    /// Don't actually do anything
     #[arg(short, long)]
     pub dry: bool,
 
+    /// Don't strip all binaries
+    ///
+    /// All libraries and executables get stripped with --strip-unneeded
+    #[arg(short, long)]
+    pub skip_strip: bool,
+
+    /// Don't check system requirements
     #[arg(long)]
     pub skip_reqs: bool,
 }
@@ -60,35 +70,64 @@ impl Cmd {
     ///   "/var/cache/lfstage/stages/lfstage-<profile>-<timestamp>.tar.xz".
     /// * `self.dry`        - If true, perform a dry run, building nothing.
     ///
+    /// * `self.skip_reqs`  - Don't check system requirements
+    /// * `self.skip_strip` - Don't strip binaries
+    ///
     /// # Errors
     /// This function returns a `CmdError` if:
     /// - The script directory couldn't be read.
     /// - One of the scripts failed.
     pub fn run(&self) -> Result<(), CmdError> {
+        let profile = &self.profile;
+        let timestamp = timestamp();
+
+        // Get the path to which the stage file should be saved. Can be overridden if the stagefile
+        // positional argument is set.
         let stagefile = match &self.stagefile {
             | Some(path) => path.clone(),
             | None => format!(
-                "/var/cache/lfstage/stages/lfstage-{}-{}.tar.xz",
-                self.profile,
-                timestamp()
+                "/var/cache/lfstage/profiles/{profile}/stages/lfstage-{profile}-{timestamp}.tar.xz",
             ),
         };
 
+        // Write some variables to files in `profile_tmpdir` to be accessed later:
+        // * `timestamp`    - The timestamp is written to `timestamp`
+        // * `stagefile`    - The name of the stagefile is written to `stagefilename`
+        // * `strip`        - If we're stripping, create the file `strip`
+        if !self.dry {
+            // set up `profile_tmpdir`
+            let profile_tmpdir = Path::new("/tmp/lfstage").join(profile);
+            mkdir_p(&profile_tmpdir)?;
+
+            // timestamp
+            fs::write(profile_tmpdir.join("timestamp"), &timestamp)?;
+
+            // stagefilename
+            fs::write(profile_tmpdir.join("stagefilename"), &stagefile)?;
+
+            // strip
+            if !self.skip_strip && CONFIG.strip {
+                fshelpers::mkf(profile_tmpdir.join("strip"))?;
+            }
+        }
+
+        // The directory for profile-specific scripts.
         let scriptdir = Path::new("/var/lib/lfstage/profiles")
             .join(&self.profile)
             .join("scripts");
 
+        // Display what would be done.
         if self.dry {
             println!(
-                "Would build profile '{}' and save it to '{stagefile}' by executing scripts in '{}'",
-                self.profile,
+                "Would build profile '{profile}' and save it to '{stagefile}' by executing scripts in '{}' and '/usr/lib/lfstage/scripts/'",
                 scriptdir.display(),
             );
             return Ok(())
         }
 
+        // Check requirements.
         if !self.skip_reqs {
-            if let Err(e) = exec!(&self.profile, "/usr/lib/lfstage/scripts/reqs.sh") {
+            if let Err(e) = exec!(&self.profile; "/usr/lib/lfstage/scripts/reqs.sh") {
                 if e.kind() == io::ErrorKind::Other {
                     error!("System does not meet requirements");
                     exit(1)
@@ -98,6 +137,7 @@ impl Cmd {
             }
         }
 
+        // Gather all the profile-specific scripts.
         let mut scripts = scriptdir
             .read_dir()?
             .filter_map(|entry| match entry {
@@ -116,6 +156,7 @@ impl Cmd {
             })
             .collect::<Vec<_>>();
 
+        // Sort those scripts.
         scripts.sort_by_key(|p| {
             p.file_name()
                 .and_then(|s| s.to_str())
@@ -123,18 +164,29 @@ impl Cmd {
                 .and_then(|(prefix, _)| prefix.parse::<u32>().ok())
         });
 
+        // Prepare for the build by cleaning and copying over sources.
         clean_lfs()?;
         setup_sources(&self.profile)?;
 
+        // Execute profile-specific scripts.
         for script in scripts {
-            let script_str = script.to_string_lossy();
-            info!("Running script {script_str}");
-            if let Err(e) = exec!(&self.profile, "{script:?}") {
-                error!("Failure in {script_str}: {e}");
+            info!("Running script {}", script.display());
+            if let Err(e) = exec!(&self.profile; &script) {
+                error!("Failure in {}: {e}", script.display());
                 exit(1)
             }
         }
 
+        // TODO: Add signing. Write lfstage metadata to /etc/lfstage-release before saving.
+
+        // Save the stage file.
+        mkdir_p(format!("/var/cache/lfstage/profiles/{profile}/stages"))?;
+        if exec!(&self.profile; "/usr/lib/lfstage/scripts/save.sh").is_err() {
+            error!("Failed to save stage file");
+            exit(1)
+        }
+
+        info!("Saved stage file to {stagefile}");
         Ok(())
     }
 }
@@ -181,8 +233,8 @@ fn setup_sources(profile: &str) -> io::Result<()> {
         let lfs_sources = Path::new("/var/lib/lfstage/mount/sources");
         mkdir_p(lfs_sources)?;
 
-        // unwrap is probably fine here and im lazy
-        let dest = lfs_sources.join(source.components().last().unwrap());
+        #[allow(clippy::unwrap_used)] // unwrap is probably fine here and im lazy
+        let dest = lfs_sources.join(source.components().next_back().unwrap());
         fs::copy(source, dest)?;
     }
 
