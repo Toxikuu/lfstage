@@ -16,13 +16,13 @@ LFStage builds [LFS](https://www.linuxfromscratch.org/)
 - Logging
 
 ### A high-level overview
-The central component of LFStage is the *profile*. A profile contains
-instructions to build a stage file. The profile defines sources and build
-instructions.
+The central component of LFStage is the *profile*. A profile defines sources and
+build instructions.
 
 LFStage handles downloading those sources and executing the scripts. LFStage
-also handles certain things internally, including cleaning the build environment
-before and after a build, stripping binaries, and saving the stage file.
+also handles certain boilerplate tasks internally, including cleaning the build
+environment before and after a build, setting up a minimal environment,
+stripping binaries, and saving the stage file.
 
 ## Installation
 To download and install LFStage run the following commands:
@@ -42,6 +42,9 @@ commands as well:
 make DESTDIR="$PWD/DESTDIR" install
 tree DESTDIR
 ```
+
+While you don't need to keep the source directory around, it's probably not a
+bad idea to since there's a lot of work still to be done.
 
 ## Dependencies
 LFStage depends on a rust compiler. That's about it.
@@ -88,6 +91,13 @@ Ideas:
 - Max written log level patch
 -->
 
+<!--
+ TODO: Once I add profile importing and exporting, create a separate git repo
+for the profiles currently defined in-tree.
+
+Add a section that links to other LFStage profiles here and link to those ^.
+-->
+
 ## Todos
 - [ ] Address all comment todos
 - [ ] Make `lfstage build` run the download logic if any sources are missing
@@ -98,6 +108,7 @@ Ideas:
               a description, author, notes, etc.
     - [ ] `lfstage reqs <profile>` assuming I add per-profile reqs.sh support
     - [ ] `lfstage import path/to/<profile>.tar.xz`
+        - [ ] Support `lfstage import <https://git.repo.git>`
     - [ ] `lfstage export <profile> <optional-destination>.tar.xz`
 - [ ] Write documentation
     - [ ] man
