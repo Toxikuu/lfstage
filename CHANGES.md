@@ -1,10 +1,18 @@
 # LFStage 3.0.0-dev
 - Complete overhaul
+    - Profiles!!!
+- Internal handling of some boilerplate
+    - Source downloads and registry
+    - Stripping
+    - Saving the stage file
 - Argument parsing with clap
-- Refactoring
+- Major refactoring
 - Stage file profile support
 - In-house source downloads
 - Improved file hierarchy
+- Improved error handling
+- Improved config file
+- Add tests
 
 # LFStage 2.2.0
 - Delete unregistered sources
