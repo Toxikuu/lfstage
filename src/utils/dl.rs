@@ -26,16 +26,11 @@ use futures::{
     future::join_all,
 };
 use httpdate::parse_http_date;
-use indicatif::{
-    MultiProgress,
-    ProgressBar,
-    ProgressStyle,
-};
 use permitit::Permit;
 use reqwest::{
     Client,
     header::{
-        ACCEPT_ENCODING,
+        // ACCEPT_ENCODING,
         HeaderMap,
         LAST_MODIFIED,
         USER_AGENT,
@@ -137,26 +132,22 @@ fn get_local_modtime(path: &Path) -> Option<SystemTime> {
 
 async fn download_file<P: AsRef<Path>>(
     client: Client,
-    // pb: ProgressBar,
     url: &str,
     file_path: P,
     download_extant: bool,
 ) -> Result<(), DownloadError> {
     let file_path = file_path.as_ref();
 
-    // it'll be manually updated
-    // pb.disable_steady_tick();
-
-    // fetch the url
+    // Fetch the url
     debug!("Fetching url '{url}'");
     let resp = client
         .get(url)
-        .header(ACCEPT_ENCODING, "identity")
+        // .header(ACCEPT_ENCODING, "identity")
         .send()
         .await?
         .error_for_status()?;
 
-    // skip extant files, but only if upstream's modtime is greater than local
+    // Skip extant files, but only if upstream's modtime is greater than local
     if file_path.exists() && !download_extant {
         let upstream_modtime = get_upstream_modtime(resp.headers()).unwrap_or_else(SystemTime::now);
         let local_modtime = get_local_modtime(file_path).unwrap_or(SystemTime::UNIX_EPOCH);
@@ -170,23 +161,12 @@ async fn download_file<P: AsRef<Path>>(
         return Err(DownloadError::Extant(file_path.to_owned()));
     }
 
-    // handle content length
-    // let content_length = resp.content_length();
-    // debug!("Content length reported as {content_length:?}");
-
-    // create a part file
+    // Create a part file
     let partfile_str = format!("{}.part", file_path.display());
     let mut partfile = File::create(&partfile_str)?;
     let mut stream = resp.bytes_stream();
 
-    // set the download size if known
-    // if let Some(size) = content_length {
-    //     pb.set_length(size);
-    //     pb.tick();
-    // }
-
-    // write the file and set the progress bar length
-    // let mut bytes_downloaded = 0;
+    // Write the file
     while let Some(chunk) = stream.next().await {
         // this hack is necessary because hyper is flaky as FUCK
         // we touch the chunk to force some lazy evaluation somewhere i think
@@ -197,20 +177,11 @@ async fn download_file<P: AsRef<Path>>(
 
         let data = chunk.inspect_err(|e| warn!("Invalid chunk: {e}"))?;
         partfile.write_all(&data)?;
-        // bytes_downloaded += data.len() as u64;
-
-        // if content_length.is_none() {
-        //     pb.set_length(bytes_downloaded);
-        // }
-        // pb.set_position(bytes_downloaded);
-        // pb.tick();
     }
+    partfile.flush()?; // paranoia
 
-    partfile.flush()?;
-    // move the part file to its final destination
+    // Move the part file to its final destination
     fs::rename(partfile_str, file_path)?;
-    // pb.finish();
-    // pb.tick();
     debug!("Downloaded '{url}' to '{}'", file_path.display());
 
     Ok(())
@@ -230,16 +201,6 @@ pub async fn download_sources<P: AsRef<Path>, Q: AsRef<Path>>(
         },
     };
 
-    // let m = MultiProgress::new();
-
-    // #[allow(clippy::expect_used)]
-    // #[allow(clippy::literal_string_with_formatting_args)] // indicatif
-    // let sty = ProgressStyle::with_template(
-    //     "{prefix} {msg:<36} [{bar:18.red/black}] {decimal_total_bytes}",
-    // )
-    // .expect("Invalid progress bar teplate")
-    // .progress_chars("=> ");
-
     let dls = read_dls_from_file(sources_list)?;
     trace!("Here's what dls looks like:\n {dls:#?}");
     let mut tasks = Vec::new();
@@ -247,16 +208,6 @@ pub async fn download_sources<P: AsRef<Path>, Q: AsRef<Path>>(
     for dl in dls {
         let client = client.clone();
         let (url, filename) = parse_dl(dl);
-
-        // set up progress bar
-        // let pb = m.add(ProgressBar::new(0));
-        // pb.set_style(sty.clone());
-        // pb.set_message(filename.clone());
-        // pb.set_prefix("\x1b[37;1m[\x1b[36mo\x1b[37m]\x1b[0m");
-        // pb.set_position(0);
-        // pb.set_length(1);
-        // pb.tick();
-
         let file_path = sources_dir.as_ref().join(&filename);
 
         let task = task::spawn(async move {
@@ -264,7 +215,6 @@ pub async fn download_sources<P: AsRef<Path>, Q: AsRef<Path>>(
                 .await
                 .permit(|e| matches!(e, DownloadError::Extant(_)))
             {
-                // | Ok(()) => pb.set_prefix("\x1b[37;1m[\x1b[32m*\x1b[37m]\x1b[0m"),
                 | Ok(()) => {},
                 | Err(e) => {
                     warn!("Failed to download {url} to {filename}: {e}");
