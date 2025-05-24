@@ -1,0 +1,3 @@
+[submodule "vendor/size"]
+	path = vendor/size
+	url = https://github.com/Toxikuu/prettysize-rs.git
