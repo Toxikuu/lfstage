@@ -46,6 +46,10 @@ impl Cmd {
             .join(&self.profile)
             .join("sources");
 
+        let sources_list = Path::new("/var/lib/lfstage/profiles/")
+            .join(&self.profile)
+            .join("sources");
+
         if self.dry {
             println!(
                 "Would ensure the directory '{}' exists",
@@ -55,12 +59,7 @@ impl Cmd {
             fshelpers::mkdir_p(&sources_dir)?;
         }
 
-        let sources_list = Path::new("/var/lib/lfstage/profiles/")
-            .join(&self.profile)
-            .join("sources");
-
-        // TODO: Consider making this dry-runnable
-        if !sources_list.exists() {
+        if !self.dry && !sources_list.exists() {
             error!("Sources list for profile '{}' does not exist", self.profile);
             return Err(CmdError::MissingComponent(sources_list));
         }
@@ -68,7 +67,7 @@ impl Cmd {
         if self.dry {
             let dls = read_dls_from_file(sources_list)?;
             println!(
-                "Would download the following URLs to '{}':",
+                "Would download the following to '{}':",
                 sources_dir.display()
             );
 
@@ -81,6 +80,7 @@ impl Cmd {
 
         info!("Downloading sources for '{}'", self.profile);
         download_sources(sources_list, sources_dir, self.force).await?;
+        info!("Downloaded sources for '{}'", self.profile);
         Ok(())
     }
 }
