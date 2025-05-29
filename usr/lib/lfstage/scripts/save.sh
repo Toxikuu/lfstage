@@ -32,7 +32,8 @@ STAGEFILE="$(cat "/tmp/lfstage/$LFSTAGE_PROFILE/stagefilename")"
 XZ_OPT=-9e tar cJpf "$STAGEFILE" .
 
 # Add a convenience symlink
-ln -sfv "../profiles/$LFSTAGE_PROFILE/stages" "/var/cache/lfstage/stages"
+BASENAME="$(basename "$STAGEFILE")"
+ln -sfv "../profiles/$LFSTAGE_PROFILE/stages/$BASENAME" "/var/cache/lfstage/stages/$BASENAME"
 
 # Finalize
 cd
