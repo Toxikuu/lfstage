@@ -377,12 +377,24 @@ find /usr/lib/gconv -type f  \
     ! -name 'UTF-16.so'      \
     ! -name 'UTF-32.so'      \
     ! -name 'gconv-modules*' \
-    -exec rm -vf {} \;
+    -exec rm -vf {} +
 
 # remove unused locales
-find /usr/share/locale/ -type d \
-    ! -name 'en*'   \
+find /usr/{share,lib}/locale    \
+    -type d                     \
+    ! -name 'en_US*'            \
     -exec rm -rvf {} +
+
+# Delete unused terminfo files
+find /usr/share/terminfo            \
+    -type f                         \
+    ! -path '*/l/linux'             \
+    ! -path '*/t/tmux'              \
+    ! -name '*/x/xterm-256color'    \
+    -exec rm -vf {} +
+
+# And clean up empty terminfo directories
+find /usr/share/terminfo -type d -empty -delete
 
 # Ephemeral file used to denote success
 touch /good
