@@ -6,8 +6,9 @@ LFS stage file generator
 </h2>
 
 ## Introduction
-LFStage builds [LFS](https://www.linuxfromscratch.org/)
-[stage files](https://wiki.gentoo.org/wiki/Stage_file).
+LFStage builds [stage files](https://wiki.gentoo.org/wiki/Stage_file) for
+[Linux From Scratch](https://www.linuxfromscratch.org/). However, it's probably
+agnostic enough to build stage files for other systems.
 
 ### Features
 - Profiles
