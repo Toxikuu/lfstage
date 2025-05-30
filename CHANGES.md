@@ -1,6 +1,7 @@
 # LFStage 3.0.0-dev
 - Complete overhaul
     - Profiles!!!
+        - Profile downloading, building, viewing, importing, and exporting
 - Internal handling of some boilerplate
     - Source downloads and registry
     - Stripping
@@ -8,7 +9,7 @@
 - Argument parsing with clap
 - Major refactoring
 - Stage file profile support
-- In-house source downloads
+- Oxidized and parallelized source downloads
 - Improved file hierarchy
 - Improved error handling
 - Improved config file
