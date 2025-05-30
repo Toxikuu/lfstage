@@ -20,12 +20,15 @@ use tracing::{
     trace,
 };
 
-use crate::unravel;
+use crate::{
+    config::CONFIG,
+    unravel,
+};
 
 // TODO: Create a thiserror for script failures prolly
 
 // This could be written to take environment variables as vector argument but I cba
-/// WARN: MUST CALL A SCRIPT, NOT A COMMAND
+/// # WARN: MUST CALL A SCRIPT, NOT A COMMAND
 #[allow(clippy::panic)]
 pub fn exec<P>(profile: Option<&str>, script: P) -> io::Result<()>
 where
@@ -42,6 +45,8 @@ where
         exit(1)
     }
 
+    // TODO: This is really fucking gross, clean it up
+    #[allow(clippy::option_if_let_else)]
     let command = if let Some(profile) = profile {
         let envs_dir = Path::new("/var/lib/lfstage/profiles")
             .join(profile)
@@ -59,6 +64,7 @@ where
                 cp -f /usr/lib/lfstage/envs/internal.env /tmp/lfstage/bashenv
                 cat << EOF >> /tmp/lfstage/bashenv
 export ENVS={envs_dir}
+export MAKEFLAGS={makeflags}
 export LFSTAGE_PROFILE={profile}
 export LFSTAGE_VERSION={version}
 source {rcfile} || exit 2
@@ -66,6 +72,7 @@ EOF
                 BASH_ENV=/tmp/lfstage/bashenv bash --noprofile --norc {script}
             ",
             envs_dir = envs_dir.display(),
+            makeflags = &CONFIG.makeflags,
             rcfile = base_env.display(),
             script = script.display(),
             version = env!("CARGO_PKG_VERSION")

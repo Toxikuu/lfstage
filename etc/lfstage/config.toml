@@ -6,6 +6,7 @@
 # - TODO: Link to documentation whenever it's written
 
 default_profile = "x86_64-glibc-tox-stage2"
+makeflags = "-j5" # WARN: Do not put your CFLAGS here
 strip = true
 log_level = "trace"
 log_max_size = "10 MB"
