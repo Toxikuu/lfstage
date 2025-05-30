@@ -103,22 +103,24 @@ Add a section that links to other LFStage profiles here and link to those ^.
 - [ ] Address all comment todos
 - [ ] Make `lfstage build` run the download logic if any sources are missing
 - [ ] Add more subcommands
-    - [ ] `lfstage view` should list the available profiles
-        - [ ] `lfstave view <profile>` should list details about a profile
+    - [x] `lfstage view` should list the available profiles
+        - [x] `lfstave view <profile>` should list details about a profile
             - [ ] Add a system for profile metadata containing information like
               a description, author, notes, etc.
     - [ ] `lfstage reqs <profile>` assuming I add per-profile reqs.sh support
-    - [ ] `lfstage import path/to/<profile>.tar.xz`
+    - [x] `lfstage import path/to/<profile>.tar.xz`
         - [ ] Support `lfstage import <https://git.repo.git>`
-    - [ ] `lfstage export <profile> <optional-destination>.tar.xz`
+    - [x] `lfstage export <profile> <optional-destination>.tar.xz`
+- [ ] Move the profiles included into their own repositories
+    - [ ] Decide on a format for repos (\<profile\>-lfstage?)
 - [ ] Add a profile struct (low priority)
 - [ ] Write documentation
     - [ ] man
     - [ ] docs
     - [ ] code
 - [ ] `./configure` script, supporting standard variables
-- [ ] More configuration options
-    - [ ] Jobs
+- [x] More configuration options
+    - [x] ~~Jobs~~ Makeflags
 - [ ] GitHub actions
     - [ ] Formatting
         - [ ] Trimming white space
