@@ -5,6 +5,11 @@ LFStage
 LFS stage file generator
 </h2>
 
+## Status - 50%
+LFStage currently supports most of the core functionality I want. I need to do
+some refactoring to account for expansions in scope, then I need to write
+documentation. Currently things mostly work, but it's not pretty.
+
 ## Introduction
 LFStage builds [stage files](https://wiki.gentoo.org/wiki/Stage_file) for
 [Linux From Scratch](https://www.linuxfromscratch.org/). However, it's probably
