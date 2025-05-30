@@ -27,7 +27,6 @@ use size::{
 };
 use tempfile::NamedTempFile;
 use tracing::{
-    Level,
     debug,
     error,
     metadata::LevelFilter,
@@ -136,13 +135,12 @@ fn log<P: AsRef<str>>(path: P) {
         .add_directive("hyper_util=warn".parse().unwrap())
         .add_directive("reqwest=warn".parse().unwrap());
 
-    // Trace-level logs are only written to stdout as they take up a lot of space
     tracing_subscriber::fmt()
         .with_env_filter(filter)
         .with_level(true)
         .with_target(true)
         .with_timer(time::uptime())
-        .with_writer(file_writer.with_max_level(Level::DEBUG).and(io::stdout))
+        .with_writer(file_writer.and(io::stdout))
         .compact()
         .init();
 
@@ -178,7 +176,7 @@ fn trim_log<P: AsRef<Path>>(path: P, max_size: u64) -> io::Result<u64> {
     let size = fs::metadata(path)?.len();
 
     if size <= max_size {
-        dbug!(size);
+        dbug!("Log size is {size}");
         return Ok(0);
     }
 
@@ -269,7 +267,7 @@ mod test {
         // Ensure newlines are present
         let contents = fs::read_to_string(path).unwrap();
         let lines = contents.lines().collect::<Vec<_>>();
-        dbug!(lines);
+        dbug!("{lines:#?}");
 
         // Ensure end is intact
         assert!(lines.last().unwrap().contains("Further reading: "));

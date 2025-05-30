@@ -3,11 +3,6 @@
 //! Everything defined here is only active whenever `debug_assertions` are enabled
 
 #[cfg(debug_assertions)]
-pub fn __dbug<D: std::fmt::Debug>(target: D) {
-    eprintln!("\x1b[38;1m DBUG\x1b[39m :::\x1b[0m {target:#?}");
-}
-
-#[cfg(debug_assertions)]
 pub fn __unravel(e: &impl std::error::Error) {
     tracing::error!("Error: {e}");
     let mut source = e.source();
@@ -28,13 +23,18 @@ macro_rules! unravel {
     };
 }
 
-/// # Prints a
+#[cfg(debug_assertions)]
+pub fn __dbug(args: std::fmt::Arguments) {
+    eprintln!("\x1b[38;1m DBUG\x1b[39m :::\x1b[0m {args}");
+}
+
+/// # Prints debugging information
 #[macro_export]
 macro_rules! dbug {
-    ($e: expr) => {
+    ($($arg:tt)*) => {
         #[cfg(debug_assertions)]
         {
-            $crate::utils::debug::__dbug(&$e);
+            $crate::utils::debug::__dbug(format_args!($($arg)*));
         }
     };
 }
