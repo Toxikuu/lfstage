@@ -8,7 +8,8 @@ fi
 
 # Unmount anything from a previous lfstage build
 if mount | grep " on $LFS" -q; then
-    umount -vR "$LFS"/*
+    # TODO: Can be refactored; im just lazy
+    umount -vR "$LFS"/* || true
 fi
 
 # Remove any stale files
