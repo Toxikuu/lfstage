@@ -7,8 +7,8 @@ if [[ "$LFS" != "/var/lib/lfstage/mount" ]]; then
 fi
 
 # Unmount anything from a previous lfstage build
-if mount | grep "^$LFS" -q; then
-    umount -vR "$LFS"
+if mount | grep " on $LFS" -q; then
+    umount -vR "$LFS"/*
 fi
 
 # Remove any stale files

@@ -1,6 +1,9 @@
 pub mod build;
 pub mod clean;
 pub mod download;
+pub mod export;
+pub mod import;
+pub mod list;
 
 use std::{
     io,
@@ -27,16 +30,20 @@ pub struct Cli {
 enum Commands {
     Build(build::Cmd),
     Clean(clean::Cmd),
+    List(list::Cmd),
+    Import(import::Cmd),
+    Export(export::Cmd),
     Download(download::Cmd),
 }
 
+#[rustfmt::skip]
 #[derive(Debug, Error)]
 pub enum CmdError {
     #[error("I/O error: {0}")]
     Io(#[from] io::Error),
 
-    #[error("Invalid argument: {0}")]
-    InvalidArgument(String),
+    // #[error("Invalid argument: {0}")]
+    // InvalidArgument(String),
 
     #[error("Missing component: {0}")]
     MissingComponent(PathBuf),
@@ -44,8 +51,8 @@ pub enum CmdError {
     #[error("Download error: {0}")]
     Download(#[from] DownloadError),
 
-    #[error("Script failed: {0}")]
-    Command(String),
+    // #[error("Script failed: {0}")]
+    // Command(String),
 }
 
 impl Cli {
@@ -53,6 +60,9 @@ impl Cli {
         match &self.command {
             | Commands::Build(cmd) => cmd.run(),
             | Commands::Clean(cmd) => cmd.run(),
+            | Commands::List(cmd) => cmd.run(),
+            | Commands::Import(cmd) => cmd.run(),
+            | Commands::Export(cmd) => cmd.run(),
             | Commands::Download(cmd) => cmd.run().await,
         }
     }
