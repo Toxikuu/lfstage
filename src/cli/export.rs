@@ -9,6 +9,7 @@ use tracing::info;
 use crate::{
     config::CONFIG,
     exec,
+    profile::Profile,
 };
 
 #[derive(Args, Debug)]
@@ -27,25 +28,25 @@ pub struct Cmd {
 
 impl Cmd {
     pub fn run(&self) -> Result<(), super::CmdError> {
+        let profile = Profile::new(&self.profile);
         let out = self
             .out
             .clone()
-            .unwrap_or_else(|| format!("/var/cache/lfstage/profiles/{}.tar.xz", &self.profile));
+            .unwrap_or_else(|| format!("/var/cache/lfstage/profiles/{}.tar.xz", &profile.name));
 
         if self.dry {
             println!(
-                "Would run /usr/lib/lfstage/scripts/export.sh with profile '{}' and destination '{out}'",
-                self.profile
+                "Would run /usr/lib/lfstage/scripts/export.sh with profile '{profile}' and destination '{out}'",
             );
             return Ok(())
         }
 
         mkdir_p("/tmp/lfstage")?;
         write("/tmp/lfstage/export", &out)?;
-        exec!(&self.profile; "/usr/lib/lfstage/scripts/export.sh")?;
+        exec!(profile; "/usr/lib/lfstage/scripts/export.sh")?;
 
-        info!("Exported '{}' to '{out}'", self.profile);
-        println!("Exported '{}' to '{out}'", self.profile);
+        info!("Exported '{profile}' to '{out}'");
+        println!("Exported '{profile}' to '{out}'");
 
         Ok(())
     }

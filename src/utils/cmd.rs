@@ -147,10 +147,10 @@ macro_rules! exec {
         use std::path::Path;
         tracing::debug!(
             "Using profile '{}' to execute script '{}'",
-            $profile,
+            $profile.name,
             Path::new($script).display(),
         );
-        $crate::utils::cmd::exec(Some($profile), $script)
+        $crate::utils::cmd::exec(Some($profile.name.as_str()), $script)
     }};
 
     // Pattern: just a script
@@ -166,18 +166,20 @@ macro_rules! exec {
 
 #[cfg(test)]
 mod test {
+    use crate::profile::Profile;
+
     #[test]
     fn exec_no_profile() { assert!(exec!("/usr/lib/lfstage/scripts/testing.sh").is_ok()) }
 
     #[test]
     #[should_panic(expected = "Nonexistent script")]
-    fn exec_nonexistent_script() { assert!(exec!("testing"; "cat /usr").is_err()) }
+    fn exec_nonexistent_script() { assert!(exec!(Profile::new("testing"); "cat /usr").is_err()) }
 
     #[test]
     fn exec_pass_reqs() {
         assert!(
             exec!(
-                "testing";
+                Profile::new("testing");
                 "/usr/lib/lfstage/scripts/reqs.sh"
             )
             .is_ok()
@@ -188,7 +190,7 @@ mod test {
     fn exec_ensure_shell_options() {
         assert!(
             exec!(
-                "testing";
+                Profile::new("testing");
                 "/usr/lib/lfstage/scripts/testing.sh"
             )
             .is_ok()

@@ -3,22 +3,12 @@
 use std::{
     fs,
     io,
-    path::{
-        Path,
-        PathBuf,
-    },
     process::exit,
 };
 
 use clap::Args;
 use fshelpers::mkdir_p;
-use is_executable::IsExecutable;
-use tracing::{
-    debug,
-    error,
-    info,
-    warn,
-};
+use tracing::error;
 
 use super::{
     CmdError,
@@ -27,13 +17,8 @@ use super::{
 use crate::{
     config::CONFIG,
     exec,
-    utils::{
-        dl::{
-            parse_dl,
-            read_dls_from_file,
-        },
-        time::timestamp,
-    },
+    profile::Profile,
+    utils::time::timestamp,
 };
 
 #[derive(Args, Debug)]
@@ -41,7 +26,7 @@ pub struct Cmd {
     #[arg(default_value = CONFIG.default_profile.as_str())]
     pub profile: String,
 
-    /// The path to save the stagefile to. Should be absolute.
+    /// The absolute path to save the stagefile to
     pub stagefile: Option<String>,
 
     /// Don't actually do anything
@@ -77,8 +62,8 @@ impl Cmd {
     /// This function returns a `CmdError` if:
     /// - The script directory couldn't be read.
     /// - One of the scripts failed.
-    pub fn run(&self) -> Result<(), CmdError> {
-        let profile = &self.profile;
+    pub async fn run(&self) -> Result<(), CmdError> {
+        let profile = Profile::new(&self.profile);
         let timestamp = timestamp();
 
         // Get the path to which the stage file should be saved. Can be overridden if the stagefile
@@ -96,27 +81,24 @@ impl Cmd {
         // * `strip`        - If we're stripping, create the file `strip`
         if !self.dry {
             // set up `profile_tmpdir`
-            let profile_tmpdir = Path::new("/tmp/lfstage").join(profile);
-            mkdir_p(&profile_tmpdir)?;
+            mkdir_p(profile.tmpdir())?;
 
             // timestamp
-            fs::write(profile_tmpdir.join("timestamp"), &timestamp)?;
+            fs::write(profile.timestampfile(), &timestamp)?;
 
             // stagefilename
-            fs::write(profile_tmpdir.join("stagefilename"), &stagefile)?;
+            fs::write(profile.stagefilenamefile(), &stagefile)?;
 
             // strip
             if !self.skip_strip && CONFIG.strip {
-                fshelpers::mkf(profile_tmpdir.join("strip"))?;
+                fshelpers::mkf(profile.tmpdir().join("strip"))?;
             }
         }
 
-        // The directory for profile-specific scripts.
-        let scriptdir = Path::new("/var/lib/lfstage/profiles")
-            .join(&self.profile)
-            .join("scripts");
+        // The directory for profile-specific scripts
+        let scriptdir = &profile.scriptdir();
 
-        // Display what would be done.
+        // Display what would be done
         if self.dry {
             println!(
                 "Would build profile '{profile}' and save it to '{stagefile}' by executing scripts in '{}' and '/usr/lib/lfstage/scripts/'",
@@ -125,9 +107,9 @@ impl Cmd {
             return Ok(())
         }
 
-        // Check requirements.
+        // Check requirements
         if !self.skip_reqs {
-            if let Err(e) = exec!(&self.profile; "/usr/lib/lfstage/scripts/reqs.sh") {
+            if let Err(e) = exec!(&profile; "/usr/lib/lfstage/scripts/reqs.sh") {
                 if e.kind() == io::ErrorKind::Other {
                     error!("System does not meet requirements");
                     exit(1)
@@ -137,106 +119,21 @@ impl Cmd {
             }
         }
 
-        // Gather all the profile-specific scripts.
-        let mut scripts = scriptdir
-            .read_dir()?
-            .filter_map(|entry| match entry {
-                | Ok(e) => Some(e),
-                | Err(e) => {
-                    warn!("Entry could not be accessed: {e}");
-                    warn!("Ignoring it");
-                    None
-                },
-            })
-            .map(|entry| entry.path())
-            .filter(|path| !path.is_dir() && path.is_executable())
-            .filter_map(|path| {
-                let str = path.file_name()?.to_string_lossy();
-                if str.chars().take(2).all(|c| c.is_ascii_digit()) { Some(path) } else { None }
-            })
-            .collect::<Vec<_>>();
+        // TODO: Add profile-specific reqs.sh support
 
-        // Sort those scripts.
-        scripts.sort_by_key(|p| {
-            p.file_name()
-                .and_then(|s| s.to_str())
-                .and_then(|s| s.split_once('-'))
-                .and_then(|(prefix, _)| prefix.parse::<u32>().ok())
-        });
-
-        // Prepare for the build by cleaning and copying over sources.
+        // Prepare for the build by cleaning and copying over sources
         clean_lfs()?;
-        setup_sources(&self.profile)?;
+        profile.download_sources(false).await?;
+        profile.setup_sources()?;
 
-        // Execute profile-specific scripts.
-        for script in scripts {
-            info!("Running script {}", script.display());
-            if let Err(e) = exec!(&self.profile; &script) {
-                error!("Failure in {}: {e}", script.display());
-                exit(1)
-            }
-        }
+        // Build
+        profile.run_build_scripts();
 
         // TODO: Add signing. Write lfstage metadata to /etc/lfstage-release before saving.
 
-        // Save the stage file.
-        mkdir_p(format!("/var/cache/lfstage/profiles/{profile}/stages"))?;
-        if exec!(&self.profile; "/usr/lib/lfstage/scripts/save.sh").is_err() {
-            error!("Failed to save stage file");
-            exit(1)
-        }
+        // Save the stage file
+        profile.save_stagefile()?;
 
-        info!("Saved stage file to {stagefile}");
         Ok(())
     }
-}
-
-fn setup_sources(profile: &str) -> io::Result<()> {
-    let sources_dir = PathBuf::from("/var/cache/lfstage/profiles/")
-        .join(profile)
-        .join("sources");
-
-    let sources_list = PathBuf::from("/var/lib/lfstage/profiles/")
-        .join(profile)
-        .join("sources");
-
-    let registered_sources = read_dls_from_file(sources_list)
-        .map_err(|e| io::Error::other(format!("Failed to read dls from sources list: {e}")))?
-        .iter()
-        .map(|dl| parse_dl(dl.to_string()).1)
-        .collect::<Vec<_>>();
-
-    let sources = sources_dir
-        .read_dir()?
-        .filter_map(|entry| match entry {
-            | Ok(e) => Some(e),
-            | Err(e) => {
-                warn!("Entry could not be accessed: {e}");
-                warn!("Ignoring it");
-                None
-            },
-        })
-        .map(|entry| entry.path())
-        .filter(|path| {
-            registered_sources.contains(
-                &path
-                    .file_name()
-                    .unwrap_or_default()
-                    .to_string_lossy()
-                    .to_string(),
-            )
-        })
-        .collect::<Vec<PathBuf>>();
-    debug!("Found registered sources: {sources:#?}");
-
-    for source in sources {
-        let lfs_sources = Path::new("/var/lib/lfstage/mount/sources");
-        mkdir_p(lfs_sources)?;
-
-        #[allow(clippy::unwrap_used)] // unwrap is probably fine here and im lazy
-        let dest = lfs_sources.join(source.components().next_back().unwrap());
-        fs::copy(source, dest)?;
-    }
-
-    Ok(())
 }

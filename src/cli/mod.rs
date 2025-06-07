@@ -58,7 +58,7 @@ pub enum CmdError {
 impl Cli {
     pub async fn run(&self) -> Result<(), CmdError> {
         match &self.command {
-            | Commands::Build(cmd) => cmd.run(),
+            | Commands::Build(cmd) => cmd.run().await,
             | Commands::Clean(cmd) => cmd.run(),
             | Commands::List(cmd) => cmd.run(),
             | Commands::Import(cmd) => cmd.run(),

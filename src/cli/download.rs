@@ -1,7 +1,5 @@
 // cli/build.rs
 
-use std::path::Path;
-
 use clap::Args;
 use tracing::{
     error,
@@ -11,10 +9,8 @@ use tracing::{
 use super::CmdError;
 use crate::{
     config::CONFIG,
-    utils::dl::{
-        download_sources,
-        read_dls_from_file,
-    },
+    profile::Profile,
+    utils::dl::read_dls_from_file,
 };
 
 #[derive(Args, Debug)]
@@ -45,33 +41,18 @@ impl Cmd {
     /// - The script directory couldn't be read.
     /// - One of the scripts failed.
     pub async fn run(&self) -> Result<(), CmdError> {
-        let sources_dir = Path::new("/var/cache/lfstage/profiles")
-            .join(&self.profile)
-            .join("sources");
+        let profile = Profile::new(&self.profile);
 
-        let sources_list = Path::new("/var/lib/lfstage/profiles/")
-            .join(&self.profile)
-            .join("sources");
-
-        if self.dry {
-            println!(
-                "Would ensure the directory '{}' exists",
-                sources_dir.display()
-            );
-        } else {
-            fshelpers::mkdir_p(&sources_dir)?;
-        }
-
-        if !self.dry && !sources_list.exists() {
+        if !profile.sourceslist().exists() {
             error!("Sources list for profile '{}' does not exist", self.profile);
-            return Err(CmdError::MissingComponent(sources_list));
+            return Err(CmdError::MissingComponent(profile.sourceslist()));
         }
 
         if self.dry {
-            let dls = read_dls_from_file(sources_list)?;
+            let dls = read_dls_from_file(profile.sourceslist())?;
             println!(
                 "Would download the following to '{}':",
-                sources_dir.display()
+                profile.sourcesdir().display()
             );
 
             for dl in &dls {
@@ -81,9 +62,9 @@ impl Cmd {
             return Ok(())
         }
 
-        info!("Downloading sources for '{}'", self.profile);
-        download_sources(sources_list, sources_dir, self.force).await?;
-        info!("Downloaded sources for '{}'", self.profile);
+        info!("Downloading sources for '{profile}'");
+        profile.download_sources(self.force).await?;
+        info!("Downloaded sources for '{profile}'");
         Ok(())
     }
 }

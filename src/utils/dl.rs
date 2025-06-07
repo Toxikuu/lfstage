@@ -28,6 +28,7 @@ use std::{
     },
 };
 
+use fshelpers::mkdir_p;
 use futures::{
     StreamExt,
     future::join_all,
@@ -100,7 +101,8 @@ fn create_client() -> Result<Client, reqwest::Error> {
 /// - <https://ftp.gnu.org/gnu/bash/bash-5.2.37.tar.gz>
 #[allow(clippy::needless_pass_by_value)] // required by multithread shenanigans
 // TODO: Find a workaround for ^
-pub fn parse_dl(dl: String) -> (String, String) {
+pub fn parse_dl<S: Into<String>>(dl: S) -> (String, String) {
+    let dl = dl.into();
     // I fucking wish I could use &str -> (&str, &str) here. The function is practically begging
     // but it has to be thread safe :sad:
     if let Some((url, f)) = dl.split_once(" -> ") {
@@ -205,6 +207,8 @@ pub async fn download_sources<P: AsRef<Path>, Q: AsRef<Path>>(
     sources_dir: Q,
     download_extant: bool,
 ) -> Result<(), DownloadError> {
+    mkdir_p(&sources_dir)?;
+
     let failed = Arc::new(AtomicBool::new(false));
     let client = match create_client() {
         | Ok(c) => c,

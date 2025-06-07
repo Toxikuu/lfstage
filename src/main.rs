@@ -13,6 +13,7 @@
 
 mod cli;
 mod config;
+mod profile;
 mod utils;
 
 use std::process::exit;
