@@ -96,12 +96,16 @@ Ideas:
 - Compression algorithm patches
 -->
 
-<!--
- TODO: Once I add profile importing and exporting, create a separate git repo
-for the profiles currently defined in-tree.
-
-Add a section that links to other LFStage profiles here and link to those ^.
--->
+## Profiles
+Here are some profiles for LFStage. They could be considered reference
+implementations:
+- [https://github.com/toxikuu/to-lfstage](to): This profile is used as a build
+environment by by [to](https://github.com/toxikuu/to)
+- [https://github.com/toxikuu/x86_64-glibc-tox-stage2-lfstage](x86_64-glibc-tox-stage2):
+This is the original LFStage profile. It's a minimal stage 2 LFS system, an
+isolated starting point from which Chapter 8 of the LFS book can be executed.
+- [https://github.com/toxikuu/to-lfstage](testing): This is a minimal testing
+profile.
 
 ## Todos
 - [ ] Address all comment todos
@@ -115,8 +119,8 @@ Add a section that links to other LFStage profiles here and link to those ^.
     - [x] `lfstage import path/to/<profile>.tar.xz`
         - [ ] Support `lfstage import <https://git.repo.git>`
     - [x] `lfstage export <profile> <optional-destination>.tar.xz`
-- [ ] Move the profiles included into their own repositories
-    - [ ] Decide on a format for repos (\<profile\>-lfstage?)
+- [x] Move the profiles included into their own repositories
+    - [x] Decide on a format for repos (\<profile\>-lfstage)
 - [x] Add a profile struct
 - [ ] Write documentation
     - [ ] man
