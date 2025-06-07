@@ -18,7 +18,7 @@ test:
 	@echo -e "\x1b[37;1m[\x1b[31mWARNING\x1b[37m]\x1b[0m Lastly, it's meant to be run by the maintainer"              >&2
 	@echo -e "\x1b[37;1m[\x1b[31mWARNING\x1b[37m]\x1b[0m In other words, take test failures with a grain of salt"     >&2
 	@sleep 4
-	cargo test
+	@if cargo --list | grep -q nextest; then cargo nextest run; else cargo test; fi
 
 install:
 	install -Dm755 target/release/lfstage  -t    $(DESTDIR)/usr/bin/
