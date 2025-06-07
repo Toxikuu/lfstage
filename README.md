@@ -5,7 +5,7 @@ LFStage
 LFS stage file generator
 </h2>
 
-## Status - 50%
+## Status - 55%
 LFStage currently supports most of the core functionality I want. I need to do
 some refactoring to account for expansions in scope, then I need to write
 documentation. Currently things mostly work, but it's not pretty.
@@ -94,7 +94,6 @@ apply patches/<patch>`.
 
 Ideas:
 - Compression algorithm patches
-- Max written log level patch
 -->
 
 <!--
@@ -106,7 +105,7 @@ Add a section that links to other LFStage profiles here and link to those ^.
 
 ## Todos
 - [ ] Address all comment todos
-- [ ] Make `lfstage build` run the download logic if any sources are missing
+- [x] Make `lfstage build` run the download logic if any sources are missing
 - [ ] Add more subcommands
     - [x] `lfstage view` should list the available profiles
         - [x] `lfstave view <profile>` should list details about a profile
@@ -118,7 +117,7 @@ Add a section that links to other LFStage profiles here and link to those ^.
     - [x] `lfstage export <profile> <optional-destination>.tar.xz`
 - [ ] Move the profiles included into their own repositories
     - [ ] Decide on a format for repos (\<profile\>-lfstage?)
-- [ ] Add a profile struct (low priority)
+- [x] Add a profile struct
 - [ ] Write documentation
     - [ ] man
     - [ ] docs
