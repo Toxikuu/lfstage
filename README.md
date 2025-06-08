@@ -5,10 +5,10 @@ LFStage
 LFS stage file generator
 </h2>
 
-## Status - 55%
-LFStage currently supports most of the core functionality I want. I need to do
-some refactoring to account for expansions in scope, then I need to write
-documentation. Currently things mostly work, but it's not pretty.
+## Status - 65%
+LFStage currently supports most of the core functionality I want. I need to
+write documentation. Some features are still pretty bare-bones. Currently things
+mostly work, and it's not too ugly.
 
 ## Introduction
 LFStage builds [stage files](https://wiki.gentoo.org/wiki/Stage_file) for
@@ -49,11 +49,18 @@ make DESTDIR="$PWD/DESTDIR" install
 tree DESTDIR
 ```
 
-While you don't need to keep the source directory around, it's probably not a
-bad idea to since there's a lot of work still to be done.
-
+<!-- TODO: If there's demand for it, use POSIX-compliant sh for internal scripts
+-->
 ## Dependencies
-LFStage depends on a rust compiler. That's about it.
+- Required
+    - Glibc (musl might also work, but I haven't tested it)
+- Build
+    - Rust
+- Runtime
+    - Bash
+    - Git (for importing profiles)
+    - Curl (for importing profiles)
+    - LFS requirements
 
 <!--
  TODO: Cache results of reqs.sh, maybe in /tmp/lfstage/reqs.cache, so it's
@@ -66,25 +73,24 @@ Yeah I probably should add per-profile `reqs.sh` support. It's nice to be able
 to check you meet requirements before running `build`, and it would allow
 profile authors a standard way to define profile requirements.
 -->
-LFStage will run `./usr/lib/lfstage/scripts/reqs.sh` before building which
-performs any final checks.
+LFStage will run `/usr/lib/lfstage/scripts/reqs.sh` before building to ensure
+general requirements are met.
 
 ## Basic usage
 Let's say you wanted to build the profile `x86_64-glibc-tox-stage2`:
 
 ```bash
-# Download the sources
-sudo lfstage download x86_64-glibc-tox-stage2
+# First, import it
+sudo lfstage import https://github.com/Toxikuu/x86_64-glibc-tox-stage2-lfstage.git
 
-# Build the stage file
+# Download the sources and build the stage file
 # Note this command takes a long time -- ~30 minutes on my system
 sudo lfstage build x86_64-glibc-tox-stage2
 
 # View the completed build
-tar tf "$(ls -1t /var/cache/lfstage/profiles/x86_64-glibc-tox-stage2/stages/* | head -1)"
+tar tf "$(command ls -1t /var/cache/lfstage/profiles/x86_64-glibc-tox-stage2/stages/* | head -1)"
 
 # View the build log
-# Note that trace logs are not written due to size concerns
 less -R /var/log/lfstage/lfstage.log
 ```
 
