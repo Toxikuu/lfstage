@@ -129,7 +129,7 @@ profile.
     - [x] Decide on a format for repos (\<profile\>-lfstage)
 - [x] Add a profile struct
 - [ ] Write documentation
-    - [ ] man
+    - [x] man
     - [ ] docs
     - [ ] code
 - [ ] `./configure` script, supporting standard variables

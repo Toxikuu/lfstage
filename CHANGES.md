@@ -1,4 +1,5 @@
 # LFStage 3.0.0-dev
+- Man pages
 - Complete overhaul
     - Profiles!!!
         - Profile downloading, building, viewing, importing, and exporting
