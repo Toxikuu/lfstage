@@ -31,23 +31,27 @@ The structure of a generic profile, as viewed with *tree -F*:
 # FILES
 
 *sources*
+
 An lfstage profile must contain a *sources* file. See _lfstage-sources_(5) for
 syntax information. The sources file is parsed, and its contents are downloaded
 in parallel to */var/cache/lfstage/profiles/<profile>/sources/*. These later get
 copied to */var/lib/lfstage/mount/sources/*.
 
 *envs/*
+
 The envs directory contains environments for the build. The only required
 environment is base.env, which might look something like so:
 
-	# envs/base.env
+```
+# envs/base.env
 
-	export LFS_TGT="x86_64-lfs-linux-gnu"
-	export C{,XX}FLAGS="-O2 -pipe"
-	export PATH="$LFS/tools/bin:/usr/bin:/usr/sbin"
-	export CONFIG_SITE="$LFS/usr/share/config.site"
-	export LDFLAGS="-Wl,-O1 -Wl,--as-needed"
-	set +h -euo pipefail
+export LFS_TGT="x86_64-lfs-linux-gnu"
+export C{,XX}FLAGS="-O2 -pipe"
+export PATH="$LFS/tools/bin:/usr/bin:/usr/sbin"
+export CONFIG_SITE="$LFS/usr/share/config.site"
+export LDFLAGS="-Wl,-O1 -Wl,--as-needed"
+set +h -euo pipefail
+```
 
 To use an environment in your chroot, simply copy it over before chrooting. The
 *ENVS* variable, among others, is set by _lfstage_(1).
@@ -57,6 +61,7 @@ To use an environment in your chroot, simply copy it over before chrooting. The
 And ensure your chroot script sources it.
 
 *scripts/*
+
 The scripts directory contains the actual build logic. For _lfstage_(1) to
 register a script, it must start with two digits, followed by a dash, as shown,
 and it *must be executable*. Though not required, scripts that call other scripts
@@ -66,9 +71,11 @@ It is recommended to partition your builds into separate stages, though you can
 organize your profile however you like.
 
 *README.md*
+
 This should contain a brief description and general overview of the profile.
 
 *LICENSE*
+
 The license under which the profile is distributed.
 
 
@@ -77,14 +84,16 @@ The license under which the profile is distributed.
 The _lfstage_(1) program exposes several environment variables for convenience,
 with sane defaults chosen for compatibility. More may be provided in the future.
 
-	# /usr/lib/lfstage/envs/internal.env
+```
+# /usr/lib/lfstage/envs/internal.env
 
-	TZ=UTC
-	LFS=/var/lib/lfstage/mount
-	TERM=xterm-256color
-	LC_ALL=POSIX
+TZ=UTC
+LFS=/var/lib/lfstage/mount
+TERM=xterm-256color
+LC_ALL=POSIX
 
-	ENVS=/path/to/profile/envs # populated at runtime
+ENVS=/path/to/profile/envs # populated at runtime
+```
 ; TODO: Add SCRIPTS environment variable
 
 
@@ -118,6 +127,7 @@ Snapshots of two profiles may be viewed at the following links:
 # NOTES
 
 *Internal profiles and scripts*
+
 Astute readers might have noticed some semblance between the structure of
 profiles defined in */var/lib/lfstage/profiles/<profile>/* and lfstage's
 own hierarchy, defined in */usr/lib/lfstage/*. This is by design in an
@@ -131,20 +141,25 @@ scripts may be viewed at */usr/lib/lfstage/scripts/*. A brief synopsis of each
 follows:
 
 *clean.sh*
+
 Cleans */var/lib/lfstage/mount*, recursively unmounting and removing any stale
 files.
 
 *reqs.sh*
+
 Ensures the host system meets build requirements.
 
 *save.sh*
+
 Strips all binaries, saves the stage file with xz compression, and cleans up.
 This script is run after all profile-defined scripts are run.
 
 *{import,export}.sh*
+
 Helper scripts for importing and exporting profiles. These are not a part of the
 build process.
 *testing.sh*
+
 A script used for testing, subject to removal.
 
 I suggest reviewing the internal scripts and environment(s), as well as one of
