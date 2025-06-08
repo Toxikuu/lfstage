@@ -2,7 +2,7 @@
 
 use std::{
     fs,
-    io,
+    path::Path,
     process::exit,
 };
 
@@ -109,14 +109,7 @@ impl Cmd {
 
         // Check requirements
         if !self.skip_reqs {
-            if let Err(e) = exec!(&profile; "/usr/lib/lfstage/scripts/reqs.sh") {
-                if e.kind() == io::ErrorKind::Other {
-                    error!("System does not meet requirements");
-                    exit(1)
-                }
-                error!("Something unexpected went wrong: {e}");
-                exit(1)
-            }
+            check_reqs(&profile);
         }
 
         // TODO: Add profile-specific reqs.sh support
@@ -135,5 +128,17 @@ impl Cmd {
         profile.save_stagefile()?;
 
         Ok(())
+    }
+}
+
+fn check_reqs(profile: &Profile) {
+    if Path::new("/tmp/lfstage/reqs").exists() {
+        return
+    }
+
+    if let Err(e) = exec!(&profile; "/usr/lib/lfstage/scripts/reqs.sh") {
+        error!("System does not meet requirements: {e}");
+        // warn!("If you'd like to continue regardless, `touch /tmp/lfstage/reqs`");
+        exit(1)
     }
 }

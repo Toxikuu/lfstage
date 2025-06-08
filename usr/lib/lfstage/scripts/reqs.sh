@@ -130,5 +130,6 @@ if $ERRORS; then
     exit 1
 else
     printf "\x1b[32;1mHost system meets all requirements\x1b[0m\n"
+    echo "Requirements met" > /tmp/lfstage/reqs
     exit 0
 fi
