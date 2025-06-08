@@ -23,7 +23,7 @@ toml = "0.8"
 tracing = "0.1"
 tracing-appender = "0.2"
 tokio = { version = "1.45.0", features = ["full"] }
-reqwest = { version = "0.12.15", features = ["stream"] }
+reqwest = { version = "0.12.15", default-features = false, features = ["stream", "rustls-tls"] }
 futures = "0.3.31"
 async-once-cell = "0.5.4"
 which = "7.0.3"
