@@ -3,3 +3,4 @@
 /stages
 /sources
 /DESTDIR
+man/*.[0-9]
