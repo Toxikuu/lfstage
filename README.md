@@ -5,10 +5,18 @@ LFStage
 LFS stage file generator
 </h2>
 
-## Status - 65%
-LFStage currently supports most of the core functionality I want. I need to
-write documentation. Some features are still pretty bare-bones. Currently things
-mostly work, and it's not too ugly.
+## Status - 75%
+Basic documentation exists in the form of man pages. The ABI should now be
+stable, with any new additions remaining backwards-compatible. Some refactoring
+is probably still warranted. UX has been improved, but UX and especially UI
+could still use some work. Support for profile imports and exports looks solid.
+
+I plan to write HTML docs with `mdbook` that run through the entire process of
+creating a profile, from setting up the git repo to executing the build, and
+then using the stage file afterwards. I'd like to add optional per-profile
+requirements scripts (these should be backwards compatible). I need to address
+miscellaneous comment todos. Finally, I'll set up github actions to aid in
+long-term maintenance.
 
 ## Introduction
 LFStage builds [stage files](https://wiki.gentoo.org/wiki/Stage_file) for
@@ -123,7 +131,7 @@ profile.
               a description, author, notes, etc.
     - [ ] `lfstage reqs <profile>` assuming I add per-profile reqs.sh support
     - [x] `lfstage import path/to/<profile>.tar.xz`
-        - [ ] Support `lfstage import <https://git.repo.git>`
+        - [x] Support `lfstage import <https://git.repo.git>`
     - [x] `lfstage export <profile> <optional-destination>.tar.xz`
 - [x] Move the profiles included into their own repositories
     - [x] Decide on a format for repos (\<profile\>-lfstage)
