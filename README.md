@@ -113,12 +113,12 @@ Ideas:
 ## Profiles
 Here are some profiles for LFStage. They could be considered reference
 implementations:
-- [https://github.com/toxikuu/to-lfstage](to): This profile is used as a build
+- [to](https://github.com/toxikuu/to-lfstage): This profile is used as a build
 environment by by [to](https://github.com/toxikuu/to)
-- [https://github.com/toxikuu/x86_64-glibc-tox-stage2-lfstage](x86_64-glibc-tox-stage2):
+- [x86_64-glibc-tox-stage2](https://github.com/toxikuu/x86_64-glibc-tox-stage2-lfstage):
 This is the original LFStage profile. It's a minimal stage 2 LFS system, an
 isolated starting point from which Chapter 8 of the LFS book can be executed.
-- [https://github.com/toxikuu/testing-lfstage](testing): This is a minimal testing
+- [testing](https://github.com/toxikuu/testing-lfstage): This is a minimal testing
 profile.
 
 ## Todos
