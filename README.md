@@ -118,7 +118,7 @@ environment by by [to](https://github.com/toxikuu/to)
 - [https://github.com/toxikuu/x86_64-glibc-tox-stage2-lfstage](x86_64-glibc-tox-stage2):
 This is the original LFStage profile. It's a minimal stage 2 LFS system, an
 isolated starting point from which Chapter 8 of the LFS book can be executed.
-- [https://github.com/toxikuu/to-lfstage](testing): This is a minimal testing
+- [https://github.com/toxikuu/testing-lfstage](testing): This is a minimal testing
 profile.
 
 ## Todos
